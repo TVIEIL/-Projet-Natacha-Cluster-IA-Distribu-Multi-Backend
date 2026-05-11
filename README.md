@@ -84,15 +84,10 @@ Natacha utilise une segmentation réseau pour garantir la stabilité :
 
 ## 📝 Roadmap
 
- \[ \] Support complet des NPU Intel via OpenVINO.
-
-* \[ \] Intégration des modèles de vision pour l'Orange Pi 6+.
-
-* \[ \] Interface de monitoring temps réel du cluster.</comment-tag id="5" text="Supprimez les barres obliques inverses (antislashs) devant les crochets. GitHub utilise la syntaxe '- [ ]' pour créer des listes de tâches interactives (checklists). L'échappement actuel empêche l'affichage des cases à cocher.
-
 * [ ] Support complet des NPU Intel via OpenVINO.
 * [ ] Intégration des modèles de vision pour l'Orange Pi 6+.
-* [ ] Interface de monitoring temps réel du cluster." type="suggestion">
+* [ ] Interface de monitoring temps réel du cluster.
+
 
 ## 💡 Pourquoi ce projet ?
 
