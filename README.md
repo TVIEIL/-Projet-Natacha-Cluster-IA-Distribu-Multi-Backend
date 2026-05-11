@@ -2,6 +2,7 @@
 Natacha est un assistant personnel modulaire conçu pour fonctionner sur un cluster de machines hétérogènes. Contrairement aux solutions monolithiques, Natacha fragmente l'intelligence (Cerveau, Oreille, Bouche) pour exploiter le meilleur de chaque architecture matérielle (Intel Core/Ultra, AMD Ryzen, Rockchip RK3588, NVIDIA Jetson).
 
 ​🏗️ Architecture du Système
+
 ​Le projet repose sur une communication hybride :
 ​MQTT : Pour la logique de contrôle et les échanges de texte.
 ​UDP / GStreamer : Pour le transport audio basse latence entre les nœuds.
