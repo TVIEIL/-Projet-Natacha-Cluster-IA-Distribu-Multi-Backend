@@ -96,17 +96,25 @@ pip install -r requirements.txt
 ## 3. Calibrage Matériel Audio (Uniquement Oreille)
 
 Branchez votre casque/micro, assurez-vous d'être dans l'environnement Conda, et lancez l'utilitaire :
-Bash
 
+```
 python3 setup_audio.py
-
+```
 Suivez les instructions pour générer automatiquement votre fichier .env contenant les identifiants de vos périphériques matériels.
-4. Exécution & Automatisation (systemd avec Conda)
+
+Voici un exemple mon micro casque USB  se nomme   USB FONGLE : Audio
+
+![Exemple d'execution de setup_audio.py](setup_audio.png)
+
+
+## 4. Exécution & Automatisation (systemd avec Conda)
+
 
 Vous pouvez tester le script manuellement :
-Bash
 
+```
 python3 oreille_v1_30.py
+```
 
 Pour le lancement automatique au démarrage :
 Avec Conda, le chemin vers l'exécutable Python est différent. Éditez votre fichier de service (ex: sudo nano /etc/systemd/system/natacha_oreille.service) :
