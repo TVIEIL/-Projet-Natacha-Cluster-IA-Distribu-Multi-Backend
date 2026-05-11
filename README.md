@@ -43,8 +43,10 @@ NVIDIA Jetson CUDA / TensorRT Vision / Cerveau
 ​Éditez le fichier .env pour définir vos capacités matérielles :
 
 # Sélection du moteur d'inférence
-STT_BACKEND="openvino"  # Options: cpu, cuda, openvino, rknn
-LLM_BACKEND="llama-cpp" # Options: ollama, llama-cpp, vllm
+```
+STT_BACKEND="openvino" 
+LLM_BACKEND="llama-cpp"
+```
 
 
 3. Lancement des Services
