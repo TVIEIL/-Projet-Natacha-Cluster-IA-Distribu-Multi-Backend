@@ -236,11 +236,14 @@ sudo sysctl -p
 Sans cette modification, GStreamer risque d'afficher un avertissement W: [pulsesink] pulseaudio.c: Protocol error ou des pertes de paquets UDP.
 Avec ce réglage, le pipeline est "confortable" et peut gérer les 200ms de pré-chargement (min-threshold-time=200000000) sans que le noyau ne sature.
 
+🎙️ Transcription Haute Fidélité : Faster-Whisper (Medium)   STT
+
+Le module Oreille de Natacha s'appuie sur la technologie Faster-Whisper, une implémentation optimisée du modèle Whisper d'OpenAI utilisant
+le moteur CTranslate2. Ce choix technique est au cœur de la réactivité du système.
 
 Natacha a désormais une structure de déploiement digne des meilleurs serveurs de production.
 
 Ton cluster est paré pour durer dans le temps ! 🚀
-
 
 
 
@@ -250,7 +253,7 @@ Ton cluster est paré pour durer dans le temps ! 🚀
 | :--- | :--- | :--- |
 | **Intel Core** | Core I5 14400 | Cerveau / Oreille (Ultra-rapide) |
 | **AMD Ryzen** | Ryzen 5500u (AVX-512) / ROCm | Oreille (Faster-Whisper) |
-| **Rockchip (OPi 6+)** | RKNN (NPU) | Bouche / Micro-services |
+| **Rockchip (OPi 6+)** | RKNN (NPU) | Bouche TTS / Audio -Transfert UDP |
 
 
 
