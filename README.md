@@ -40,20 +40,14 @@ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
 bash Miniconda3-latest-Linux-aarch64.sh
 ```
 
+Processus d'installation (commun) :
 
+ Appuyez sur Entrée pour faire défiler la licence, puis tapez yes pour l'accepter.
+ Validez l'emplacement d'installation par défaut en appuyant sur Entrée.
+ Important : À la fin de l'installation, le script vous demande s'il doit exécuter conda init. Tapez impérativement yes.
+ Enfin, pour que votre terminal prenne en compte l'installation immédiatement (sans avoir à vous déconnecter), tapez :
 
- Processus d'installation (commun) :
-
-
-    Appuyez sur Entrée pour faire défiler la licence, puis tapez yes pour l'accepter.
-
-    Validez l'emplacement d'installation par défaut en appuyant sur Entrée.
-
-    Important : À la fin de l'installation, le script vous demande s'il doit exécuter conda init. Tapez impérativement yes.
-
-Enfin, pour que votre terminal prenne en compte l'installation immédiatement (sans avoir à vous déconnecter), tapez :
-
-```bash
+```
 source ~/.bashrc
 ```
 
