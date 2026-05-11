@@ -4,7 +4,7 @@
 
 Natacha est un assistant personnel modulaire conçu pour fonctionner sur un cluster de machines hétérogènes. Contrairement aux solutions monolithiques, Natacha fragmente l'intelligence (Cerveau, Oreille, Bouche) pour exploiter le meilleur de chaque architecture matérielle (Intel Core, AMD Ryzen, Rockchip SIC).
 
-
+&nbsp;
 
 
 ​🏗️ Architecture du Système
@@ -22,7 +22,7 @@ Natacha est un assistant personnel modulaire conçu pour fonctionner sur un clus
 ​Le Cerveau (Inférence) : LLM local pour le raisonnement et la gestion des commandes.
 
 ​La Bouche (Synthèse) : TTS (Text-To-Speech) et sortie audio physique.
-
+&nbsp;
 
 ​🚀 Compatibilité Matérielle (Multi-Backend)
 
@@ -236,6 +236,8 @@ sudo sysctl -p
 Sans cette modification, GStreamer risque d'afficher un avertissement W: [pulsesink] pulseaudio.c: Protocol error ou des pertes de paquets UDP.
 Avec ce réglage, le pipeline est "confortable" et peut gérer les 200ms de pré-chargement (min-threshold-time=200000000) sans que le noyau ne sature.
 
+&nbsp;
+
 🎙️ Transcription Haute Fidélité : Faster-Whisper (Medium)   STT
 
 Le module Oreille de Natacha s'appuie sur la technologie Faster-Whisper, une implémentation optimisée du modèle Whisper d'OpenAI utilisant
@@ -245,7 +247,7 @@ Natacha a désormais une structure de déploiement digne des meilleurs serveurs 
 
 Ton cluster est paré pour durer dans le temps ! 🚀
 
-
+&nbsp;
 
 ​Le projet  utilise  les accélérateurs matériels disponibles dans mon cas :
 
@@ -255,7 +257,7 @@ Ton cluster est paré pour durer dans le temps ! 🚀
 | **AMD Ryzen** | Ryzen 5500u (AVX-512) / ROCm | Oreille (Faster-Whisper) |
 | **Rockchip (OPi 6+)** | RKNN (NPU) | Bouche TTS / Audio -Transfert UDP |
 
-
+&nbsp;
 
 ## 📡 Communication Inter-Machines
 
@@ -266,6 +268,8 @@ Natacha utilise une segmentation réseau pour garantir la stabilité :
 * **Plan de Contrôle (Wi-Fi)** : Mises à jour et accès internet.
 
 * **mDNS/Avahi** : Les machines se reconnaissent automatiquement (ex: `cerveaunatacha.local`).
+
+&nbsp;
 
 ## 📝 Roadmap
 
