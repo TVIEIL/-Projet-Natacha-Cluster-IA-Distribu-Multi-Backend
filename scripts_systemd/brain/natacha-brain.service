@@ -1,0 +1,29 @@
+[Unit]
+Description=Cerveau de Natacha - Serveur Llama.cpp
+After=network.target
+
+[Service]
+User=vieil
+Group=vieil
+LimitMEMLOCK=infinity
+WorkingDirectory=/home/vieil/llama.cpp
+
+ExecStart=/home/vieil/llama.cpp/build/bin/llama-server \
+    -m /home/vieil/modeles_natacha/openhermes-2.5-mistral-7b.Q4_K_M.gguf \
+    --ctx-size 2048 \
+    --threads 12 \
+    --flash-attn on  \
+    --mlock \
+    --host 127.0.0.1 \
+    --port 8000
+
+Restart=always
+RestartSec=10
+
+# On laisse un peu plus de marge pour éviter que le service ne soit tué
+MemoryMax=16G
+# On enlève MemoryHigh ou on le met à 12G pour ne pas brider le mlock
+MemoryHigh=15G
+
+[Install]
+WantedBy=multi-user.target

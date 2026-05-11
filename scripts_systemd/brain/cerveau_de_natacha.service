@@ -1,0 +1,17 @@
+[Unit]
+Description=Cerveau de Natacha Bridge OpenHermes
+After=network-online.target mosquitto.service
+Requires=mosquitto.service
+
+[Service]
+Type=simple
+User=vieil
+WorkingDirectory=/home/vieil/cerveau_natacha/
+
+ExecStart=/usr/bin/screen -L -Logfile /home/vieil/cerveau_natacha/cerveau_natacha.log -DmS cerveau_natacha /home/vieil/miniconda3/envs/cerveau_natacha/bin/python3 /home/vieil/cerveau_natacha/bridge_openhermes_33_11.py
+
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

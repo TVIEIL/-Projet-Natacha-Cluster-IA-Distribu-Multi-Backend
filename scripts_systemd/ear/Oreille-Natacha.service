@@ -1,0 +1,17 @@
+[Unit]
+Description=Oreille de Natacha - Whisper Service
+After=network.target
+
+[Service]
+Type=forking
+User=vieil
+WorkingDirectory=/home/vieil/oreille_natacha
+# On lance screen en mode détaché (-dmS) avec le nom de session souhaité
+ExecStart=/usr/bin/screen -dmS oreille_natacha /home/vieil/anaconda3/envs/oreille_natacha/bin/python oreille_v1_17_STABLE_RELOAD.py
+# Commande pour fermer proprement la session screen à l'arrêt du service
+ExecStop=/usr/bin/screen -S oreille_natacha -X quit
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

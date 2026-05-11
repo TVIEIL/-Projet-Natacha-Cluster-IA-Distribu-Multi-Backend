@@ -1,0 +1,14 @@
+[Unit]
+Description=Serveur Kiwix pour Natacha (Physique)
+After=network.target
+
+[Service]
+# On utilise ton utilisateur pour les permissions
+User=vieil
+# Chemin exact vers le binaire et l'archive ZIM
+ExecStart=/home/vieil/kiwix/kiwix-tools_linux-x86_64-3.8.2/kiwix-serve --port 8080 /home/vieil/kiwix/wikipedia_fr_physics_maxi_2026-04.zim
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

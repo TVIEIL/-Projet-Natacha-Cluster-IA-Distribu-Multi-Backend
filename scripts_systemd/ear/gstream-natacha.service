@@ -1,0 +1,17 @@
+[Unit]
+Description=GStreamer Receiver pour Natacha (Bouche)
+After=network.target
+
+[Service]
+Type=simple
+User=vieil
+Group=vieil
+WorkingDirectory=/home/vieil/oreille_natacha
+# On donne l'accès au serveur de son de l'utilisateur
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+ExecStart=/usr/bin/python3 bouche_receveur_final_v1_1.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target
