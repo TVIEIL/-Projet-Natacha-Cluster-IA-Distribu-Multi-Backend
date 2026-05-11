@@ -31,11 +31,12 @@ Natacha est un assistant personnel modulaire conçu pour fonctionner sur un clus
 
 ​Le projet détecte et utilise automatiquement les accélérateurs matériels disponibles :
 
-Hardware Backend Accelerators Utilisation Optimale
-Intel Core Ultra OpenVINO (GPU Arc / NPU) Cerveau / Oreille Ultra-rapide
-AMD Ryzen CPU (AVX-512) / ROCm Oreille (Faster-Whisper)
-Rockchip (OPi 6+) RKNN (NPU) Bouche / Micro-services
-NVIDIA Jetson CUDA / TensorRT Vision / Cerveau
+| Hardware | Backend Accelerators | Utilisation Optimale |
+| :--- | :--- | :--- |
+| **Intel Core Ultra** | OpenVINO (GPU Arc / NPU) | Cerveau / Oreille (Ultra-rapide) |
+| **AMD Ryzen** | CPU (AVX-512) / ROCm | Oreille (Faster-Whisper) |
+| **Rockchip (OPi 6+)** | RKNN (NPU) | Bouche / Micro-services |
+| **NVIDIA Jetson** | CUDA / TensorRT | Vision / Cerveau |
 
 
 ​2. Configuration du Backend
