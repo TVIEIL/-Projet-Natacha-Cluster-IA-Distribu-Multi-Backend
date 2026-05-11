@@ -22,13 +22,18 @@ Natacha est un assistant personnel modulaire conçu pour fonctionner sur un clus
 
 
 ​🚀 Compatibilité Matérielle (Multi-Backend)
+## 🛠️ Installation & Déploiement
 
-🛠️ Installation & Déploiement
+### 1. Pré-requis système & Matériel
 
-​1. Pré-requis système
+* **OS** : Ubuntu 24.04+ ou Armbian (pour Rockchip).
+* **Services** : Broker MQTT (Mosquitto) installé et actif sur le réseau.
+* **Audio (Nœud Oreille)** : La capture audio via PyAudio nécessite des librairies système spécifiques. À installer en premier :
 
-​OS : Ubuntu 24.04+ ou Armbian (pour Rockchip).
-​Services : Broker MQTT (Mosquitto) installé sur le nœud "Cerveau".
+  ```bash
+  sudo apt-get update
+  sudo apt-get install python3-dev portaudio19-dev python3-venv
+  ```
 
 
 ​Le projet détecte et utilise automatiquement les accélérateurs matériels disponibles :
