@@ -4,6 +4,9 @@
 
 Natacha est un assistant personnel modulaire conçu pour fonctionner sur un cluster de machines hétérogènes. Contrairement aux solutions monolithiques, Natacha fragmente l'intelligence (Cerveau, Oreille, Bouche) pour exploiter le meilleur de chaque architecture matérielle (Intel Core/Ultra, AMD Ryzen, Rockchip RK3588, NVIDIA Jetson).
 
+
+
+
 ​🏗️ Architecture du Système
 
 ​Le projet repose sur une communication hybride :
@@ -22,7 +25,7 @@ Natacha est un assistant personnel modulaire conçu pour fonctionner sur un clus
 
 
 ​🚀 Compatibilité Matérielle (Multi-Backend)
-## 🛠️ Installation & Déploiement
+# 🛠️ Installation & Déploiement
 
 ## 0. Prérequis : Installation de Miniconda3
 
@@ -31,48 +34,84 @@ Si Miniconda n'est pas encore présent sur votre système, vous devez l'installe
 Pour un PC classique (Intel/AMD - ex: i5, Ryzen) :
 ```
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh
+./Miniconda3-latest-Linux-x86_64.sh
 ```
 
 ## Pour une carte SBC/Embarquée (ARM - ex: Orange Pi, Raspberry Pi) :
 ```
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
-bash Miniconda3-latest-Linux-aarch64.sh
+./Miniconda3-latest-Linux-aarch64.sh
 ```
 
 Processus d'installation (commun) :
 
  Appuyez sur Entrée pour faire défiler la licence, puis tapez yes pour l'accepter.
+ 
  Validez l'emplacement d'installation par défaut en appuyant sur Entrée.
+ 
  Important : À la fin de l'installation, le script vous demande s'il doit exécuter conda init. Tapez impérativement yes.
+ 
  Enfin, pour que votre terminal prenne en compte l'installation immédiatement (sans avoir à vous déconnecter), tapez :
 
 ```
 source ~/.bashrc
 ```
 
+## 1. Création de l'environnement Conda
+Ouvrez un terminal et créez un environnement dédié au nœud (ici, l'Oreille) avec une version de Python stable pour l'IA (Python 3.10 ou 3.11 est recommandé) :
 
-### 1. Pré-requis système & Matériel
 
-* **OS** : Ubuntu 24.04+ ou Armbian (pour Rockchip).
-* **Services** : Broker MQTT (Mosquitto) installé et actif sur le réseau.
-* **Audio (Nœud Oreille)** : La capture audio via PyAudio nécessite des librairies système spécifiques. À installer en premier :
+```
+conda create -n natacha_oreille python=3.11 -y
+```
 
-  ```bash
-  sudo apt-get update
-  sudo apt-get install python3-dev portaudio19-dev python3-venv
-  ```
 
-  Environnements Virtuels (Recommandé)
+## 2. Activation et Installation
 
-  Pour éviter les conflits, Natacha utilise un environnement virtuel par nœud. Exemple d'initialisation pour l'Oreille :
-  
-  ```bash
-  cd modules/ear/
-  python3 -m venv .venv
-  source .venv/bin/activate
-  pip install -r requirements.txt
-  ```
+
+Activez ce nouvel environnement. Votre terminal affichera (natacha_oreille) au début de la ligne :
+
+```
+conda activate natacha_oreille
+```
+
+Placez-vous dans le dossier du module :
+
+```
+cd ~/Natacha-Project/modules/ear
+```
+
+L'astuce Conda pour l'audio : Plutôt que d'installer les dépendances système complexes via apt, laissez Conda gérer la compilation de PyAudio et de portaudio proprement :
+
+```
+conda install -c conda-forge pyaudio -y
+```
+
+Puis, installez le reste de vos librairies (MQTT, Faster-Whisper, etc.) :
+
+```
+pip install -r requirements.txt
+```
+
+## 3. Calibrage Matériel Audio (Uniquement Oreille)
+
+Branchez votre casque/micro, assurez-vous d'être dans l'environnement Conda, et lancez l'utilitaire :
+Bash
+
+python3 setup_audio.py
+
+Suivez les instructions pour générer automatiquement votre fichier .env contenant les identifiants de vos périphériques matériels.
+4. Exécution & Automatisation (systemd avec Conda)
+
+Vous pouvez tester le script manuellement :
+Bash
+
+python3 oreille_v1_30.py
+
+Pour le lancement automatique au démarrage :
+Avec Conda, le chemin vers l'exécutable Python est différent. Éditez votre fichier de service (ex: sudo nano /etc/systemd/system/natacha_oreille.service) :
+
+
 
 ​Le projet détecte et utilise automatiquement les accélérateurs matériels disponibles :
 
