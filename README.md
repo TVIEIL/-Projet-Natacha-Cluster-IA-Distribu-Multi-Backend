@@ -10,6 +10,8 @@ Natacha est un assistant personnel modulaire conçu pour fonctionner sur un clus
 ​L'Oreille (Transcription) : Capture audio et conversion STT (Speech-To-Text).
 ​Le Cerveau (Inférence) : LLM local pour le raisonnement et la gestion des commandes.
 ​La Bouche (Synthèse) : TTS (Text-To-Speech) et sortie audio physique.
+
+
 ​🚀 Compatibilité Matérielle (Multi-Backend)
 
 🛠️ Installation & Déploiement
