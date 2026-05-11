@@ -13,7 +13,9 @@ Natacha est un assistant personnel modulaire conçu pour fonctionner sur un clus
 ​🚀 Compatibilité Matérielle (Multi-Backend)
 
 🛠️ Installation & Déploiement
+
 ​1. Pré-requis système
+
 ​OS : Ubuntu 24.04+ ou Armbian (pour Rockchip).
 ​Services : Broker MQTT (Mosquitto) installé sur le nœud "Cerveau".
 
@@ -28,6 +30,7 @@ NVIDIA Jetson CUDA / TensorRT Vision / Cerveau
 
 
 ​2. Configuration du Backend
+
 ​Éditez le fichier .env pour définir vos capacités matérielles :
 
 # Sélection du moteur d'inférence
@@ -36,23 +39,27 @@ LLM_BACKEND="llama-cpp" # Options: ollama, llama-cpp, vllm
 
 
 3. Lancement des Services
+
 ​Chaque nœud peut être lancé indépendamment via systemd ou Docker :
 
 # Exemple pour lancer l'Oreille sur un Ryzen
 python3 modules/ear/main.py --device cpu --threads 12
 
 📡 Communication Inter-Machines
+
 ​Natacha utilise une segmentation réseau pour garantir la stabilité :
 ​Plan de Données (Ethernet) : Flux audio et MQTT (Stabilité maximale).
 ​Plan de Contrôle (Wi-Fi) : Mises à jour et accès internet.
 ​Les machines se reconnaissent automatiquement via mDNS/Avahi (ex: cerveaunatacha.local).
 
 ​📝 Roadmap
+
 ​[ ] Support complet des NPU Intel via OpenVINO.
 ​[ ] Intégration des modèles de vision pour l'Orange Pi 6+.
 ​[ ] Interface de monitoring temps réel du cluster.
 
 ​💡 Pourquoi ce projet ?
+
 ​Le projet Natacha démontre qu'il est possible de créer une IA domestique puissante en recyclant et en synchronisant du matériel varié, sans dépendre du Cloud, tout en conservant une latence de réponse "humaine".
 
 
