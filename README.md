@@ -43,34 +43,62 @@ NVIDIA Jetson CUDA / TensorRT Vision / Cerveau
 ​Éditez le fichier .env pour définir vos capacités matérielles :
 
 # Sélection du moteur d'inférence
+
 ```
-STT_BACKEND="openvino" 
-LLM_BACKEND="llama-cpp"
+STT_BACKEND='openvino'
+LLM_BACKEND='llama-cpp'
 ```
 
+### 3. Sécurité & Secrets
 
-3. Lancement des Services
+Pour des raisons de sécurité, les identifiants SSH ne sont pas inclus dans le dépôt. Pour configurer vos accès :
 
-​Chaque nœud peut être lancé indépendamment via systemd ou Docker :
+1. Allez dans le dossier `modules/ear/`.
 
-# Exemple pour lancer l'Oreille sur un Ryzen
-python3 modules/ear/main.py --device cpu --threads 12
+2. Copiez le fichier d'exemple :
 
-📡 Communication Inter-Machines
+   ```bash
+   cp secrets_natacha.py.example secrets_natacha.py
+   ```
 
-​Natacha utilise une segmentation réseau pour garantir la stabilité :
-​Plan de Données (Ethernet) : Flux audio et MQTT (Stabilité maximale).
-​Plan de Contrôle (Wi-Fi) : Mises à jour et accès internet.
-​Les machines se reconnaissent automatiquement via mDNS/Avahi (ex: cerveaunatacha.local).
+3. Modifiez `secrets_natacha.py` avec vos propres identifiants SSH et adresses IP.
 
-​📝 Roadmap
+### 4. Lancement des Services
 
-​[ ] Support complet des NPU Intel via OpenVINO.
-​[ ] Intégration des modèles de vision pour l'Orange Pi 6+.
-​[ ] Interface de monitoring temps réel du cluster.
+Chaque nœud peut être lancé indépendamment. Exemple pour lancer l'Oreille (version 1.30-SR) sur un Ryzen :
 
-​💡 Pourquoi ce projet ?
 
-​Le projet Natacha démontre qu'il est possible de créer une IA domestique puissante en recyclant et en synchronisant du matériel varié, sans dépendre du Cloud, tout en conservant une latence de réponse "humaine".
+```bash
+python3 modules/ear/oreille_v1_30.py
+```
+
+## 📡 Communication Inter-Machines
+
+Natacha utilise une segmentation réseau pour garantir la stabilité :
+
+* **Plan de Données (Ethernet)** : Flux audio et MQTT (Stabilité maximale).
+
+* **Plan de Contrôle (Wi-Fi)** : Mises à jour et accès internet.
+
+* **mDNS/Avahi** : Les machines se reconnaissent automatiquement (ex: `cerveaunatacha.local`).
+
+## 📝 Roadmap
+
+ \[ \] Support complet des NPU Intel via OpenVINO.
+
+* \[ \] Intégration des modèles de vision pour l'Orange Pi 6+.
+
+* \[ \] Interface de monitoring temps réel du cluster.</comment-tag id="5" text="Supprimez les barres obliques inverses (antislashs) devant les crochets. GitHub utilise la syntaxe '- [ ]' pour créer des listes de tâches interactives (checklists). L'échappement actuel empêche l'affichage des cases à cocher.
+
+* [ ] Support complet des NPU Intel via OpenVINO.
+* [ ] Intégration des modèles de vision pour l'Orange Pi 6+.
+* [ ] Interface de monitoring temps réel du cluster." type="suggestion">
+
+## 💡 Pourquoi ce projet ?
+
+Le projet Natacha démontre qu'il est possible de créer une IA domestique puissante en recyclant et en synchronisant du matériel varié, sans dépendre du Cloud, tout en conservant une latence de réponse "humaine".
+
+*Développé par Thierry VIEIL - 2026*
+
 
 
