@@ -29,18 +29,20 @@ Natacha est un assistant personnel modulaire conçu pour fonctionner sur un clus
 Si Miniconda n'est pas encore présent sur votre système, vous devez l'installer en premier. La version dépend du type de processeur de votre nœud.
 
 Pour un PC classique (Intel/AMD - ex: i5, Ryzen) :
-```bash
+```
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
 ```
 
 ## Pour une carte SBC/Embarquée (ARM - ex: Orange Pi, Raspberry Pi) :
-```bash
+```
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
 bash Miniconda3-latest-Linux-aarch64.sh
 ```
 
-## Processus d'installation (commun) :
+
+
+ Processus d'installation (commun) :
 
 
     Appuyez sur Entrée pour faire défiler la licence, puis tapez yes pour l'accepter.
@@ -51,7 +53,7 @@ bash Miniconda3-latest-Linux-aarch64.sh
 
 Enfin, pour que votre terminal prenne en compte l'installation immédiatement (sans avoir à vous déconnecter), tapez :
 
-```Bash
+```bash
 source ~/.bashrc
 ```
 
