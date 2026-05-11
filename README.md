@@ -184,7 +184,7 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 ```
-Pour sortir de nano CTRL + o pour sauver puis CTRL + x pour sortir 
+CTRL + o pour sauver puis CTRL + x pour sortir de nano
 
 Activez et lancez le service :
 
