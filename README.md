@@ -2,7 +2,7 @@
 
 ![Schéma de l'Architecture Natacha](architecture-natacha.png)
 
-Natacha est un assistant personnel modulaire conçu pour fonctionner sur un cluster de machines hétérogènes. Contrairement aux solutions monolithiques, Natacha fragmente l'intelligence (Cerveau, Oreille, Bouche) pour exploiter le meilleur de chaque architecture matérielle (Intel Core/Ultra, AMD Ryzen, Rockchip RK3588, NVIDIA Jetson).
+Natacha est un assistant personnel modulaire conçu pour fonctionner sur un cluster de machines hétérogènes. Contrairement aux solutions monolithiques, Natacha fragmente l'intelligence (Cerveau, Oreille, Bouche) pour exploiter le meilleur de chaque architecture matérielle (Intel Core, AMD Ryzen, Rockchip SIC).
 
 
 
@@ -58,7 +58,9 @@ source ~/.bashrc
 ```
 
 ## 1. Création de l'environnement Conda
-Ouvrez un terminal et créez un environnement dédié au nœud (ici, l'Oreille) avec une version de Python stable pour l'IA (Python 3.10 ou 3.11 est recommandé) :
+Ouvrez un terminal et créez un environnement dédié au nœud (ici, l'Oreille) avec une version de 
+
+Python stable pour l'IA (Python 3.10 ou 3.11 est recommandé) :
 
 
 ```
@@ -84,7 +86,7 @@ cd ~/Natacha-Project/modules/ear
 L'astuce Conda pour l'audio : Plutôt que d'installer les dépendances système complexes via apt, laissez Conda gérer la compilation de PyAudio et de portaudio proprement :
 
 ```
-conda install -c conda-forge pyaudio -y
+conda install -c conda-forge pyaudio screen -y
 ```
 
 Puis, installez le reste de vos librairies (MQTT, Faster-Whisper, etc.) :
@@ -107,42 +109,7 @@ Voici un exemple mon micro casque USB  se nomme   USB DONGLE : Audio
 ![Exemple d'execution de setup_audio.py](setup_audio.png)
 
 
-## 4. Exécution & Automatisation (systemd avec Conda)
-
-
-Vous pouvez tester le script manuellement :
-
-```
-python3 oreille_v1_30.py
-```
-
-Pour le lancement automatique au démarrage :
-Avec Conda, le chemin vers l'exécutable Python est différent. Éditez votre fichier de service (ex: sudo nano /etc/systemd/system/natacha_oreille.service) :
-
-
-
-​Le projet détecte et utilise automatiquement les accélérateurs matériels disponibles :
-
-| Hardware | Backend Accelerators | Utilisation Optimale |
-| :--- | :--- | :--- |
-| **Intel Core Ultra** | OpenVINO (GPU Arc / NPU) | Cerveau / Oreille (Ultra-rapide) |
-| **AMD Ryzen** | CPU (AVX-512) / ROCm | Oreille (Faster-Whisper) |
-| **Rockchip (OPi 6+)** | RKNN (NPU) | Bouche / Micro-services |
-| **NVIDIA Jetson** | CUDA / TensorRT | Vision / Cerveau |
-
-
-​2. Configuration du Backend
-
-​Éditez le fichier .env pour définir vos capacités matérielles :
-
-# Sélection du moteur d'inférence
-
-```
-STT_BACKEND='openvino'
-LLM_BACKEND='llama-cpp'
-```
-
-### 3. Sécurité & Secrets
+## 4. Sécurité & Secrets
 
 Pour des raisons de sécurité, les identifiants SSH ne sont pas inclus dans le dépôt. Pour configurer vos accès :
 
@@ -156,14 +123,87 @@ Pour des raisons de sécurité, les identifiants SSH ne sont pas inclus dans le 
 
 3. Modifiez `secrets_natacha.py` avec vos propres identifiants SSH et adresses IP.
 
-### 4. Lancement des Services
-
-Chaque nœud peut être lancé indépendamment. Exemple pour lancer l'Oreille (version 1.30-SR) sur un Ryzen :
+## 5. Exécution & Automatisation (systemd avec Conda)
 
 
-```bash
-python3 modules/ear/oreille_v1_30.py
+Vous pouvez tester le script manuellement :
+
 ```
+python3 oreille_v1_30.py
+```
+
+Pour le lancement automatique au démarrage :
+Avec Conda, le chemin vers l'exécutable Python est différent. Éditez votre fichier de service (ex: sudo nano /etc/systemd/system/natacha_oreille.service) :
+
+
+
+## 6. Automatisation Robuste (Systemd + Screen)
+
+Pour que le nœud démarre tout seul avec la machine tout en restant consultable, nous utilisons un service système couplé à screen.
+
+Créez le fichier de service :
+
+```
+sudo nano /etc/systemd/system/natacha_oreille.service
+```
+
+Collez la configuration suivante (adaptez vieil par votre nom d'utilisateur) :
+Ini, TOML
+
+```
+[Unit]
+Description=Natacha - Nœud Oreille (Conda + Screen)
+After=network.target sound.target
+
+[Service]
+User=vieil
+WorkingDirectory=/home/vieil/Natacha-Project/modules/ear
+
+Environment="XDG_RUNTIME_DIR=/run/user/1000"
+
+ExecStart=/usr/bin/screen -DmS natacha_oreille /home/vieil/miniconda3/envs/natacha_oreille/bin/python3 oreille_v1_30.py
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+Pour sortir de nano CTRL + o pour sauver puis CTRL + x pour sortir 
+
+Activez et lancez le service :
+
+```
+sudo systemctl enable natacha_oreille.service
+sudo systemctl start natacha_oreille.service
+```
+
+## 7. Monitoring au quotidien
+
+Grâce à screen, le nœud tourne en tâche de fond mais reste accessible à tout moment :
+
+```
+screen -r natacha_oreille
+```
+
+Quitter l'affichage sans couper l'IA : Appuyez sur Ctrl+A puis D (Détacher).
+
+Natacha a désormais une structure de déploiement digne des meilleurs serveurs de production.
+
+Ton cluster est paré pour durer dans le temps ! 🚀
+
+
+
+
+​Le projet  utilise  les accélérateurs matériels disponibles dans mon cas :
+
+| Hardware | Backend Accelerators | Utilisation Optimale |
+| :--- | :--- | :--- |
+| **Intel Core** | Core I5 14400 | Cerveau / Oreille (Ultra-rapide) |
+| **AMD Ryzen** | Ryzen 5500u (AVX-512) / ROCm | Oreille (Faster-Whisper) |
+| **Rockchip (OPi 6+)** | RKNN (NPU) | Bouche / Micro-services |
+
+
 
 ## 📡 Communication Inter-Machines
 
