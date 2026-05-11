@@ -25,7 +25,22 @@ Natacha est un assistant personnel modulaire conçu pour fonctionner sur un clus
 
 
 ​🚀 Compatibilité Matérielle (Multi-Backend)
+
+
+
 # 🛠️ Installation & Déploiement
+
+📋 Prérequis Système
+
+Le projet Natacha est développé et optimisé pour Ubuntu 24.04 LTS. L'utilisation de cette version garantit
+la stabilité des flux audio et la gestion correcte des environnements Conda.
+
+. Système d'exploitation :
+
+    OS : Ubuntu 24.04 LTS (recommandé sur Ryzen et Intel).
+
+    Architecture : x86_64 ou ARM64 (Orange Pi).
+    
 
 ## 0. Prérequis : Installation de Miniconda3
 
@@ -187,6 +202,40 @@ screen -r natacha_oreille
 ```
 
 Quitter l'affichage sans couper l'IA : Appuyez sur Ctrl+A puis D (Détacher).
+
+
+
+## 8. Gstream  écoute de la synthèse vocale au casque 
+
+On utilise le micro casque USB sur la carte ou ordinateur RYZEN 5 "oreille".
+La carte reçoit un flux audio provenant de l'orangepi6plus la "Bouche".
+Le casque USB va restituer la synthèse vocale provenant de la "Bouche"
+
+⚙️ Optimisation du flux Audio (UDP)
+
+Le pipeline GStreamer utilise un buffer de sécurité de 512 Ko (buffer-size=524288) pour éviter les craquements audio
+sur le réseau Ethernet. Pour que ce buffer soit accepté par le système, vous devez augmenter la limite du noyau Linux :
+
+Éditer la configuration système :
+
+```
+sudo nano /etc/sysctl.conf
+```
+Ajouter les lignes suivantes en bas du fichier :
+Plaintext
+```
+net.core.rmem_max=524288
+net.core.wmem_max=524288
+```
+    
+Appliquer les changements :
+```
+sudo sysctl -p
+```
+    
+Sans cette modification, GStreamer risque d'afficher un avertissement W: [pulsesink] pulseaudio.c: Protocol error ou des pertes de paquets UDP.
+Avec ce réglage, le pipeline est "confortable" et peut gérer les 200ms de pré-chargement (min-threshold-time=200000000) sans que le noyau ne sature.
+
 
 Natacha a désormais une structure de déploiement digne des meilleurs serveurs de production.
 
