@@ -35,6 +35,16 @@ Natacha est un assistant personnel modulaire conçu pour fonctionner sur un clus
   sudo apt-get install python3-dev portaudio19-dev python3-venv
   ```
 
+  Environnements Virtuels (Recommandé)
+
+  Pour éviter les conflits, Natacha utilise un environnement virtuel par nœud. Exemple d'initialisation pour l'Oreille :
+  
+  ```bash
+  cd modules/ear/
+  python3 -m venv .venv
+  source .venv/bin/activate
+  pip install -r requirements.txt
+  ```
 
 ​Le projet détecte et utilise automatiquement les accélérateurs matériels disponibles :
 
