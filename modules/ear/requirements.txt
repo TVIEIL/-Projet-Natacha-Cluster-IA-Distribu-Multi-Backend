@@ -1,0 +1,6 @@
+# Dépendances Python pour l'Oreille (STT & Capture)
+numpy
+paramiko
+PyAudio
+paho-mqtt>=2.0.0
+faster-whisper

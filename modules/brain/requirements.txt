@@ -1,0 +1,5 @@
+# Dépendances Python pour le Cerveau (Inférence, RAG, Web)
+requests
+chromadb
+paho-mqtt>=2.0.0
+beautifulsoup4
