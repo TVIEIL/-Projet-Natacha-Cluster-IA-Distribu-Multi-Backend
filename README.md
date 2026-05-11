@@ -102,7 +102,7 @@ python3 setup_audio.py
 ```
 Suivez les instructions pour générer automatiquement votre fichier .env contenant les identifiants de vos périphériques matériels.
 
-Voici un exemple mon micro casque USB  se nomme   USB FONGLE : Audio
+Voici un exemple mon micro casque USB  se nomme   USB DONGLE : Audio
 
 ![Exemple d'execution de setup_audio.py](setup_audio.png)
 
