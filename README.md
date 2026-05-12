@@ -450,6 +450,7 @@ sudo apt install kiwix-tools -y
 
 Une fois l'environnement activé, installez toutes les bibliothèques nécessaires au fonctionnement de l'intelligence :
 ```
+conda activate cerveau_natacha
 pip install -r ~/Natacha-Project/modules/brain/requirements.txt
 ```
 
