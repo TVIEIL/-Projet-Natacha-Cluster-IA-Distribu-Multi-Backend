@@ -1,14 +1,20 @@
 [Unit]
-Description=Cerveau de Natacha Bridge OpenHermes
-After=network-online.target mosquitto.service
-Requires=mosquitto.service
+Description=Cerveau de Natacha - Pont Intelligence (MQTT/ChromaDB/Kiwix)
+# On attend que le réseau, le broker MQTT ET le serveur llama.cpp soient prêts
+After=network-online.target mosquitto.service llama-brain.service
+Requires=mosquitto.service llama-brain.service
 
 [Service]
 Type=simple
 User=vieil
-WorkingDirectory=/home/vieil/cerveau_natacha/
+Group=vieil
 
-ExecStart=/usr/bin/screen -L -Logfile /home/vieil/cerveau_natacha/cerveau_natacha.log -DmS cerveau_natacha /home/vieil/miniconda3/envs/cerveau_natacha/bin/python3 /home/vieil/cerveau_natacha/bridge_openhermes_33_11.py
+WorkingDirectory=/home/vieil/Natacha-Project/modules/brain
+
+ExecStart=/home/vieil/miniconda3/envs/cerveau_natacha/bin/python3 brain_v33_12.py
+
+# Pour voir les logs en temps réel avec journalctl -u cerveau_natacha -f
+Environment=PYTHONUNBUFFERED=1
 
 Restart=always
 RestartSec=10
