@@ -230,9 +230,9 @@ After=network.target
 Type=simple
 User=vieil
 Group=vieil
-WorkingDirectory=/home/vieil/oreille_natacha
+WorkingDirectory=/home/vieil/Natacha-Project/modules/ear
 Environment=XDG_RUNTIME_DIR=/run/user/1000
-ExecStart=/usr/bin/python3 /home/vieil/oreille_natacha/bouche_receveur_final_v1_0.py
+ExecStart=/usr/bin/python3 /home/vieil/Natacha-Project/modules/ear/bouche_receveur_final_v1_0.py
 Restart=always
 RestartSec=5
 
