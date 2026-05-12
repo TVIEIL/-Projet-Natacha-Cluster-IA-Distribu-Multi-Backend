@@ -361,7 +361,8 @@ wget https://huggingface.co/TheBloke/OpenHermes-2.5-Mistral-7B-GGUF/resolve/main
 ```
 
 [!NOTE]
-Le fichier de service llama-brain.service pointe directement vers ce chemin (/home/vieil/modeles_natacha/).
+Le fichier de service natacha-brain.service pointe directement vers ce chemin (/home/vieil/modeles_natacha/).
+--- adaptez vieil par votre nom d'utilisateur ---
 
 Création du fichier de service natacha-brain.service
 ```
@@ -369,7 +370,7 @@ sudo nano /etc/systemd/system/natacha-brain.service
 ```
 &nbsp;
 </br>
-Code du service 
+Code du service  (adaptez vieil par votre nom d'utilisateur) :
 ```
 [Unit]
 Description=Cerveau de Natacha - Serveur Llama.cpp
@@ -449,7 +450,7 @@ sudo apt install kiwix-tools -y
 
 Une fois l'environnement activé, installez toutes les bibliothèques nécessaires au fonctionnement de l'intelligence :
 ```
-pip install -r /home/vieil/Natacha-Project/modules/brain/requirements.txt
+pip install -r ~/Natacha-Project/modules/brain/requirements.txt
 ```
 
 # 🧠 Le Cerveau (Nœud Cognitif : Core i5-14500)
@@ -591,7 +592,7 @@ Le module "Bouche" assure la synthèse vocale (TTS) et le retour audio vers le n
 
 ⚙️ Installation du moteur Piper
 
-Le moteur Piper doit être installé manuellement dans /home/vieil/piper_bin/.
+Le moteur Piper doit être installé manuellement dans ~/piper_bin/.
 
 C'est une étape cruciale pour l'Orange Pi, car c'est elle qui donne sa voix à Natacha.
 
