@@ -1,0 +1,23 @@
+
+[Unit]
+Description=Bouche de Natacha - Synthèse Vocale (Piper/GStreamer)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=vieil
+Group=vieil
+WorkingDirectory=/home/vieil/Natacha-Project/modules/mouth
+
+# Utilisation de l'environnement Conda et du script renommé
+ExecStart=/home/tvieil/miniconda3/envs/tts_env/bin/python3 mouth_v10.py
+
+# Logs en temps réel pour journalctl -u bouche_natacha -f
+Environment=PYTHONUNBUFFERED=1
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
