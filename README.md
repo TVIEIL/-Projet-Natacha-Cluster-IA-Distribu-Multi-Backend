@@ -526,7 +526,7 @@ Requires=mosquitto.service llama-brain.service
 Type=simple
 User=vieil
 Group=vieil
-# On pointe vers le dossier du projet GitHub
+
 WorkingDirectory=/home/vieil/Natacha-Project/modules/brain
 
 ExecStart=/home/vieil/miniconda3/envs/cerveau_natacha/bin/python3 brain_v33_12.py
