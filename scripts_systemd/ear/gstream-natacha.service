@@ -1,23 +1,14 @@
 [Unit]
 Description=GStreamer Receiver pour Natacha (Bouche)
-# On attend que le réseau et le son soient prêts
-After=network.target pulseaudio.service
+After=network.target
 
 [Service]
-# IMPORTANT : On pointe vers ton Python Miniconda
-ExecStart=/home/vieil/miniconda3/bin/python3 /home/vieil/oreille_natacha/bouche_receveur_final_v1_0.py
-
-# IMPORTANT : Dossier de travail pour trouver le fichier .env
-WorkingDirectory=/home/vieil/oreille_natacha
-
-# On lance le service avec ton utilisateur
+Type=simple
 User=vieil
 Group=vieil
-
-# Variables pour l'accès au son (PulseAudio) sous Ubuntu 24.04
-Environment=PYTHONUNBUFFERED=1
+WorkingDirectory=/home/vieil/Natacha-Project/modules/ear
 Environment=XDG_RUNTIME_DIR=/run/user/1000
-
+ExecStart=/usr/bin/python3 /home/vieil/Natacha-Project/modules/ear/bouche_receveur_final_v1_0.py
 Restart=always
 RestartSec=5
 
