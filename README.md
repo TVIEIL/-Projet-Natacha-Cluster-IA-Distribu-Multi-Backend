@@ -166,23 +166,29 @@ Collez la configuration suivante (adaptez vieil par votre nom d'utilisateur) :
 Ini, TOML
 
 ```
-[Unit]
-Description=Natacha - Nœud Oreille (Conda + Screen)
-After=network.target sound.target
+After=network.target pulseaudio.service
 
 [Service]
+# On utilise l'utilisateur pour l'accès aux droits audio
 User=vieil
+Group=vieil
+
+# Dossier où se trouve ton script et ton .env
 WorkingDirectory=/home/vieil/Natacha-Project/modules/ear
 
+# Environnement nécessaire pour Ubuntu 24.04 et PulseAudio
 Environment="XDG_RUNTIME_DIR=/run/user/1000"
+Environment=PYTHONUNBUFFERED=1
 
-ExecStart=/usr/bin/screen -DmS natacha_oreille /home/vieil/miniconda3/envs/natacha_oreille/bin/python3 oreille_v1_30.py
+# Exécution directe sans screen
+ExecStart=/home/vieil/miniconda3/envs/natacha_oreille/bin/python3 bouche_receveur_final_v1_0.py
 
+# Redémarrage automatique en cas de souci
 Restart=always
 RestartSec=5
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 ```
 CTRL + o puis 'entrée' pour sauver le fichier, puis CTRL + x pour sortir de nano
 
