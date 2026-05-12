@@ -314,7 +314,8 @@ chmod +x reset_audio_natacha.sh
 
 
 Le Cerveau est le centre de réflexion du cluster. Il héberge le moteur d'inférence LLM et traite les requêtes textuelles pour générer des réponses cohérentes.
-</br>
+
+
 ℹ️ Spécifications Techniques
 
     Processeur : Intel Core i5 (14ème Génération) - 12 Threads.
@@ -449,12 +450,11 @@ pip install -r /home/vieil/Natacha-Project/modules/brain/requirements.txt
 # 🧠 Le Cerveau (Nœud Cognitif : Core i5-14500)
 
 Ce module est le centre de réflexion. Il traite les questions reçues par l'oreille,
-
+&nbsp;
 consulte ses mémoires et génère une réponse streamée vers la bouche.
 &nbsp;
 &nbsp;
 &nbsp;
-</br>
 ℹ️ Fonctionnalités Clés
 &nbsp;
 &nbsp;
@@ -466,11 +466,14 @@ Voyage Temporel : Un système de filtrage par année pour les actualités (prati
 &nbsp;
 &nbsp;
 Savoir Déterministe : Interrogation d'un serveur Kiwix local (Wikipedia/ZIM) pour les sujets techniques et physiques.
+
 &nbsp;
 &nbsp;
+
 Streaming Intelligent : Découpe la réponse en phrases pour que la "Bouche" commence à parler avant même que la réflexion soit terminée.
-</br>
+
 &nbsp;
+
 ⚙️ Spécifications du SystèmeCPU : Intel Core i5-14500 (14ème Génération) exploitant 12 threads pour l'inférence.
 
 Modèle LLM : OpenHermes 2.5 Mistral 7B (GGUF Q4_K_M).
@@ -496,11 +499,13 @@ pip install chromadb paho-mqtt beautifulsoup4 requests python-dotenv
 3. Initialisation de la Mémoire (ChromaDB)
 </br>
 Au premier lancement, le script crée automatiquement le dossier ./memoire_chroma pour stocker les souvenirs et l'expertise.
-</br>
+&nbsp;
+&nbsp;
 📡 Topologies des Flux (MQTT)
-</br>
-Le cerveau s'abonne et publie sur les canaux suivants :TopicAction
-
+&nbsp;
+&nbsp;
+Le cerveau s'abonne et publie sur les canaux suivants :
+&nbsp;
 natacha/question 📥 Réception du texte de l'Oreille
 
 natacha/reponse 📤 Envoi de la réponse (phrase par phrase) vers la Bouche.
