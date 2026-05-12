@@ -308,6 +308,40 @@ le moteur CTranslate2. Ce choix technique est au cœur de la réactivité du sys
 chmod +x reset_audio_natacha.sh 
 ./reset_audio_natacha.sh
 ```
+</br>
+
+# 🧠 Le Cerveau (Nœud Central : Core i5)
+
+
+Le Cerveau est le centre de réflexion du cluster. Il héberge le moteur d'inférence LLM et traite les requêtes textuelles pour générer des réponses cohérentes.
+ℹ️ Spécifications Techniques
+
+    Processeur : Intel Core i5 (14ème Génération) - 12 Threads.
+
+    Modèle : openhermes-2.5-mistral-7b.Q4_K_M.gguf.
+
+    Moteur : llama.cpp en mode serveur HTTP.
+
+⚙️ Optimisations Performance
+
+    [!TIP]
+    Pour maximiser la vitesse d'inférence sur cette architecture, nous utilisons :
+
+        --flash-attn : Accélération de l'attention (Flash Attention).
+
+        --mlock : Verrouillage du modèle en RAM pour éviter la pagination sur le disque.
+
+        --threads 12 : Exploitation totale des capacités du Core i5.
+
+📜 Automatisation avec Systemd
+
+Le serveur d'intelligence démarre automatiquement avec le système. Le fichier de service se trouve dans scripts_systemd/brain/llama-brain.service.
+
+Commandes de gestion :
+Bash
+
+sudo systemctl start llama-brain
+sudo systemctl status llama-brain
 
 </br>
 Natacha a désormais une structure de déploiement digne des meilleurs serveurs de production.
