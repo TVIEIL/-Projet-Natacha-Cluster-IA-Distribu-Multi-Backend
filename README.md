@@ -451,25 +451,33 @@ pip install -r /home/vieil/Natacha-Project/modules/brain/requirements.txt
 
 Ce module est le centre de réflexion. Il traite les questions reçues par l'oreille,
 &nbsp;
+
 consulte ses mémoires et génère une réponse streamée vers la bouche.
+
 &nbsp;
+
 &nbsp;
+
 &nbsp;
 ℹ️ Fonctionnalités Clés
+
 &nbsp;
+
 &nbsp;
+
 &nbsp;
 Mémoire Relationnelle : Utilise ChromaDB pour stocker et retrouver les souvenirs personnels de Thierry.
 &nbsp;
+
 &nbsp;
 Voyage Temporel : Un système de filtrage par année pour les actualités (pratique pour contextualiser les infos).
 &nbsp;
+
 &nbsp;
 Savoir Déterministe : Interrogation d'un serveur Kiwix local (Wikipedia/ZIM) pour les sujets techniques et physiques.
-
-&nbsp;
 &nbsp;
 
+&nbsp;
 Streaming Intelligent : Découpe la réponse en phrases pour que la "Bouche" commence à parler avant même que la réflexion soit terminée.
 
 &nbsp;
