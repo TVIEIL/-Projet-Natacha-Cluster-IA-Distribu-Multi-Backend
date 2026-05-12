@@ -1,6 +1,6 @@
 # -Projet-Natacha-Cluster-IA-Distribu-Multi-Backend
 
-![Schéma de l'Architecture Natacha](architecture-natacha.png)
+![Schéma de l'Architecture Natacha](assets/architecture-natacha.png)
 
 Natacha est un assistant personnel modulaire conçu pour fonctionner sur un cluster de machines hétérogènes. Contrairement aux solutions monolithiques, Natacha fragmente l'intelligence (Cerveau, Oreille, Bouche) pour exploiter le meilleur de chaque architecture matérielle (Intel Core, AMD Ryzen, Rockchip SIC).
 
@@ -121,7 +121,7 @@ Suivez les instructions pour générer automatiquement votre fichier .env conten
 
 Voici un exemple avec mon micro casque USB qui se nomme   "USB DONGLE : Audio"
 
-![Exemple d'execution de setup_audio.py](setup_audio.png)
+![Exemple d'execution de setup_audio.py](assets/setup_audio.png)
 
 
 ## 4. Sécurité & Secrets
@@ -207,7 +207,7 @@ Grâce à screen, le nœud tourne en tâche de fond mais reste accessible à tou
 screen -r oreille_natacha
 ```
 
-![oreille_natacha_v_1_30.py](oreille_natacha_v_1_30.png)
+![oreille_natacha_v_1_30.py](assets/oreille_natacha_v_1_30.png)
 
 
 Quitter l'affichage sans couper l'IA : Appuyez sur Ctrl+A puis D (Détacher).
@@ -264,7 +264,7 @@ systemctl status gstream-natacha
 ```
 
 
-![Status bouche_receveur_final_v_1_0](bouche_receveur_final_v_1_0.png)
+![Status bouche_receveur_final_v_1_0](assets/bouche_receveur_final_v_1_0.png)
 
 
 </br>
