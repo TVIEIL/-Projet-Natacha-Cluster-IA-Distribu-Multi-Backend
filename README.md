@@ -405,7 +405,8 @@ WantedBy=multi-user.target
 </br>
 📜 Automatisation avec Systemd
 
-Le serveur d'intelligence démarre automatiquement avec le système. Le fichier de service se trouve dans scripts_systemd/brain/llama-brain.service.
+Le serveur d'intelligence démarre automatiquement avec le système. Le fichier de service se trouve dans scripts_systemd/brain/natacha-brain.service.
+Il s'occupe du démarrage automatique de llama.cpp au démarrage du cerveau.
 
 Commandes de gestion :
 
