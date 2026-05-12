@@ -640,7 +640,7 @@ Bash
 # 1. On dit à systemd de relire les fichiers
 sudo systemctl daemon-reload
 
-# 2. On active le nouveau nom au démarrage
+# 2. On active le service nom au démarrage
 sudo systemctl enable bouche_natacha.service
 
 # 3. On peut vérifier que tout tourne
