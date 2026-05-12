@@ -227,7 +227,7 @@ Création du service gstream_natacha.service
 sudo nano /etc/systemd/system/gstream_natacha.service
 ```
 
-Ajouter le code suivant :
+Ajouter le code suivant (adaptez vieil par votre nom d'utilisateur)  :
 ```
 [Unit]
 Description=GStreamer Receiver pour Natacha (Bouche)
@@ -247,8 +247,6 @@ RestartSec=5
 WantedBy=default.target
 ```
 CTRL + o puis 'entrée' pour sauver le fichier, puis CTRL + x pour sortir de nano
-
-Modifier le nom de l'utilisateur vieil par le votre.
 
 
 Activez et lancez le service :
