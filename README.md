@@ -339,6 +339,7 @@ Le Cerveau est le centre de réflexion du cluster. Il héberge le moteur d'infé
 
 ```
 # 1. Récupération des sources
+cd ~
 git clone https://github.com/ggerganov/llama.cpp
 cd llama.cpp
 
@@ -409,8 +410,8 @@ Le serveur d'intelligence démarre automatiquement avec le système. Le fichier 
 Commandes de gestion :
 
 ```
-sudo systemctl start llama-brain
-sudo systemctl status llama-brain
+sudo systemctl start natacha-brain.service
+sudo systemctl status natacha-brain.service
 ```
 </br>
 
