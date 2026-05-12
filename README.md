@@ -578,6 +578,9 @@ Le cerveau s'abonne et publie sur les canaux suivants :
 # 👄 La Bouche (Nœud : Orange Pi 6 Plus)
 
 Le module "Bouche" assure la synthèse vocale (TTS) et le retour audio vers le nœud principal.
+
+&nbsp;
+
 ℹ️ Fonctionnement
 
     MQTT : Le script écoute le topic natacha/reponse.
@@ -586,15 +589,58 @@ Le module "Bouche" assure la synthèse vocale (TTS) et le retour audio vers le n
 
     Streaming UDP : Le son n'est pas joué localement, mais envoyé via GStreamer en flux brut (S16LE, 22050Hz) vers l'IP du Ryzen sur le port 5000.
 
+&nbsp;
+
 ⚙️ Installation du moteur Piper
 
-Le moteur Piper doit être installé manuellement dans /home/tvieil/piper_bin/.
+Le moteur Piper doit être installé manuellement dans /home/vieil/piper_bin/.
+
+C'est une étape cruciale pour l'Orange Pi, car c'est elle qui donne sa voix à Natacha.
+
+Piper est exceptionnel pour sa vitesse, mais il demande une installation précise pour fonctionner avec le script Python.
+
+&nbsp;
+
+🛠️ Installation du moteur Piper (TTS)
+
+Pour garantir les meilleures performances sur l'Orange Pi, nous utilisons les binaires pré-compilés de Piper.
+
+Bash
+```
+mkdir -p ~/piper_bin && cd ~/piper_bin
+# Téléchargement de la version Linux ARM64 (adaptée à l'Orange Pi)
+wget https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_arm64.tar.gz
+tar -xf piper_arm64.tar.gz
+```
+
+
 Bash
 ```
 # Téléchargement du modèle
-wget https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx -P /home/vieil/bouche_natacha/models/
+wget https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx -P ~/bouche_natacha/models/
+wget https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx.json -P ~/bouche_natacha/models/
 ```
 
+🐍 Configuration de l'environnement Python (tts_env)
+
+On utilise Miniconda3 pour isoler les outils de synthèse vocale.
+
+Création de l'environnement :
+ Bash
+```
+# Création de l'environnement avec Python 3.10 (très stable pour le TTS)
+conda create -n tts_env python=3.10 -y
+conda activate tts_env
+# Installation des dépendances via le fichier requirements
+pip install -r ~/Natacha-Project/modules/mouth/requirements.txt
+```
+
+Installation du système GStreamer (Indispensable) :
+ Bash
+```
+sudo apt update
+sudo apt install gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugins-good -y
+```
 
 📡 Flux de données (GStreamer)
 
