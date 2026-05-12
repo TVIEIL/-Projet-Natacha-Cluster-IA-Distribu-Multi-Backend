@@ -457,11 +457,7 @@ consulte ses mémoires et génère une réponse streamée vers la bouche.
 &nbsp;
 
 &nbsp;
-
-&nbsp;
 ℹ️ Fonctionnalités Clés
-
-&nbsp;
 
 &nbsp;
 
