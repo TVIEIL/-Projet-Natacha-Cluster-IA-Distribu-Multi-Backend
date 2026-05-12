@@ -416,6 +416,7 @@ sudo systemctl status llama-brain
 🐍 Environnement & Services du Cerveau
 
 Pour isoler les dépendances et assurer la communication entre les modules, suivez ces étapes d'installation.
+
 1. Gestionnaire d'environnement (Miniconda)
 
 L'utilisation de Miniconda permet de gérer proprement les versions de Python et les bibliothèques sans polluer le système.
