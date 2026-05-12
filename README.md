@@ -480,7 +480,9 @@ Modèle LLM : OpenHermes 2.5 Mistral 7B (GGUF Q4_K_M).
 
 Base Vectorielle : ChromaDB (Persistent Client).
 
-🛠️ Installation du Module Cerveau1. Prérequis Système
+🛠️ Installation du Module Cerveau
+
+1. Prérequis Système
 
 ```
 sudo apt install kiwix-tools -y
@@ -496,25 +498,31 @@ pip install chromadb paho-mqtt beautifulsoup4 requests python-dotenv
 ```
 
 </br>
-3. Initialisation de la Mémoire (ChromaDB)
-</br>
+ 3. Initialisation de la Mémoire (ChromaDB)
+
+&nbsp;
+
 Au premier lancement, le script crée automatiquement le dossier ./memoire_chroma pour stocker les souvenirs et l'expertise.
+
 &nbsp;
 &nbsp;
+
 📡 Topologies des Flux (MQTT)
-&nbsp;
+
 &nbsp;
 Le cerveau s'abonne et publie sur les canaux suivants :
 &nbsp;
-natacha/question 📥 Réception du texte de l'Oreille
 
-natacha/reponse 📤 Envoi de la réponse (phrase par phrase) vers la Bouche.
+    . natacha/question 📥 Réception du texte de l'Oreille
 
-natacha/apprendre 💾 Mémorisation d'une nouvelle connaissance.
+    . natacha/reponse 📤 Envoi de la réponse (phrase par phrase) vers la Bouche.
 
-natacha/raz_memoire 🚨 Réinitialisation complète de ChromaDB.
+    . natacha/apprendre 💾 Mémorisation d'une nouvelle connaissance.
+
+    . natacha/raz_memoire 🚨 Réinitialisation complète de ChromaDB.
 
 </br>
+
 Natacha a désormais une structure de déploiement digne des meilleurs serveurs de production.
 
 Ton cluster est paré pour durer dans le temps ! 🚀
