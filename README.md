@@ -352,34 +352,155 @@ cmake --build . --config Release
 📥 Gestion du Modèle (OpenHermes 2.5)
 
 Le modèle utilisé est un fichier au format GGUF, optimisé pour tourner sur CPU.
+```
+mkdir ~/modeles_natacha
+cd ~/modeles_natacha
+wget https://huggingface.co/TheBloke/OpenHermes-2.5-Mistral-7B-GGUF/resolve/main/openhermes-2.5-mistral-7b.Q4_K_M.gguf
+```
 
-    Récupération : Le modèle provient généralement du dépôt de TheBloke ou de Hugging Face.
+[!NOTE]
+Le fichier de service llama-brain.service pointe directement vers ce chemin (/home/vieil/modeles_natacha/).
 
-    Stockage : Pour plus de clarté, nous regroupons les modèles dans un dossier dédié :
-    Bash
-
-    ```
-    mkdir ~/modeles_natacha
-    cd ~/modeles_natacha
-    # Exemple de téléchargement (via wget ou curl)
-    wget https://huggingface.co/TheBloke/OpenHermes-2.5-Mistral-7B-GGUF/resolve/main/openhermes-2.5-mistral-7b.Q4_K_M.gguf
-    ```
-    
-    [!NOTE]
-    Le fichier de service llama-brain.service pointe directement vers ce chemin (/home/vieil/modeles_natacha/). Si tu déplaces le modèle, pense à mettre à jour le chemin dans le service !
-    
+Création du fichier de service natacha-brain.service
+```
+sudo nano /etc/systemd/system/natacha-brain.service
+```
+&nbsp;
 </br>
+Code du service 
+```
+[Unit]
+Description=Cerveau de Natacha - Serveur Llama.cpp
+After=network.target
 
+[Service]
+User=vieil
+Group=vieil
+LimitMEMLOCK=infinity
+WorkingDirectory=/home/vieil/llama.cpp
+
+ExecStart=/home/vieil/llama.cpp/build/bin/llama-server \
+    -m /home/vieil/modeles_natacha/openhermes-2.5-mistral-7b.Q4_K_M.gguf \
+    --ctx-size 2048 \
+    --threads 12 \
+    --flash-attn on  \
+    --mlock \
+    --host 127.0.0.1 \
+    --port 8000
+
+Restart=always
+RestartSec=10
+
+# On laisse un peu plus de marge pour éviter que le service ne soit tué
+MemoryMax=16G
+# On enlève MemoryHigh ou on le met à 12G pour ne pas brider le mlock
+MemoryHigh=15G
+
+[Install]
+WantedBy=multi-user.target
+```
+
+</br>
 📜 Automatisation avec Systemd
 
 Le serveur d'intelligence démarre automatiquement avec le système. Le fichier de service se trouve dans scripts_systemd/brain/llama-brain.service.
 
 Commandes de gestion :
-Bash
+
 ```
 sudo systemctl start llama-brain
 sudo systemctl status llama-brain
 ```
+</br>
+
+🐍 Environnement & Services du Cerveau
+
+Pour isoler les dépendances et assurer la communication entre les modules, suivez ces étapes d'installation.
+1. Gestionnaire d'environnement (Miniconda)
+
+L'utilisation de Miniconda permet de gérer proprement les versions de Python et les bibliothèques sans polluer le système.
+Bash
+
+# Création de l'environnement dédié
+```
+conda create -n cerveau_natacha python=3.11 -y
+conda activate cerveau_natacha
+```
+
+2. Services de Communication & Savoir (Mosquitto & Kiwix)
+
+Le Cerveau utilise Mosquitto comme chef d'orchestre des messages et Kiwix pour l'accès à la connaissance hors-ligne.
+Bash
+
+# Installation du serveur et des clients MQTT
+```
+sudo apt update && sudo apt install mosquitto mosquitto-clients -y
+sudo apt install kiwix-tools -y
+```
+
+3. Dépendances Python du module
+
+Une fois l'environnement activé, installez toutes les bibliothèques nécessaires au fonctionnement de l'intelligence :
+```
+pip install -r /home/vieil/Natacha-Project/modules/brain/requirements.txt
+```
+
+# 🧠 Le Cerveau (Nœud Cognitif : Core i5-14500)
+
+Ce module est le centre de réflexion. Il traite les questions reçues par l'oreille,
+
+consulte ses mémoires et génère une réponse streamée vers la bouche.
+&nbsp;
+</br>
+ℹ️ Fonctionnalités Clés
+&nbsp;
+Mémoire Relationnelle : Utilise ChromaDB pour stocker et retrouver les souvenirs personnels de Thierry.
+&nbsp;
+Voyage Temporel : Un système de filtrage par année pour les actualités (pratique pour contextualiser les infos).
+&nbsp;
+Savoir Déterministe : Interrogation d'un serveur Kiwix local (Wikipedia/ZIM) pour les sujets techniques et physiques.
+&nbsp;
+Streaming Intelligent : Découpe la réponse en phrases pour que la "Bouche" commence à parler avant même que la réflexion soit terminée.
+</br>
+&nbsp;
+⚙️ Spécifications du SystèmeCPU : Intel Core i5-14500 (14ème Génération) exploitant 12 threads pour l'inférence.
+
+Modèle LLM : OpenHermes 2.5 Mistral 7B (GGUF Q4_K_M).
+
+Base Vectorielle : ChromaDB (Persistent Client).
+
+🛠️ Installation du Module Cerveau1. Prérequis Système
+
+```
+sudo apt install kiwix-tools -y
+sudo apt install mosquitto mosquitto-clients -y
+```
+
+2. Environnement Python
+
+Il est fortement recommandé d'utiliser l'environnement cerveau_natacha via Miniconda3.
+```
+conda activate cerveau_natacha
+pip install chromadb paho-mqtt beautifulsoup4 requests python-dotenv
+```
+
+</br>
+3. Initialisation de la Mémoire (ChromaDB)
+</br>
+Au premier lancement, le script crée automatiquement le dossier ./memoire_chroma pour stocker les souvenirs et l'expertise.
+</br>
+📡 Topologies des Flux (MQTT)
+</br>
+Le cerveau s'abonne et publie sur les canaux suivants :TopicAction
+
+natacha/question 📥 Réception du texte de l'Oreille
+
+natacha/reponse 📤 Envoi de la réponse (phrase par phrase) vers la Bouche.
+
+natacha/apprendre 💾 Mémorisation d'une nouvelle connaissance.
+
+natacha/raz_memoire 🚨 Réinitialisation complète de ChromaDB.
+
 </br>
 Natacha a désormais une structure de déploiement digne des meilleurs serveurs de production.
 
