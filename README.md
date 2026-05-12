@@ -403,6 +403,7 @@ WantedBy=multi-user.target
 ```
 
 </br>
+
 📜 Automatisation avec Systemd
 
 Le serveur d'intelligence démarre automatiquement avec le système. Le fichier de service se trouve dans scripts_systemd/brain/natacha-brain.service.
