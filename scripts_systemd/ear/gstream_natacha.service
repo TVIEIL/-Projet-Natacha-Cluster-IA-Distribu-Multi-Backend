@@ -6,9 +6,10 @@ After=network.target
 Type=simple
 User=vieil
 Group=vieil
-WorkingDirectory=/home/vieil/Natacha-Project/modules/ear
+WorkingDirectory=/home/vieil/oreille_natacha
+# CETTE LIGNE EST CRUCIALE POUR ENTENDRE LE SON EN SERVICE
 Environment=XDG_RUNTIME_DIR=/run/user/1000
-ExecStart=/usr/bin/python3 /home/vieil/Natacha-Project/modules/ear/bouche_receveur_final_v1_0.py
+ExecStart=/usr/bin/python3 /home/vieil/oreille_natacha/bouche_receveur_final_v1_0.py
 Restart=always
 RestartSec=5
 
