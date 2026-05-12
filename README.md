@@ -300,7 +300,16 @@ Avec ce réglage, le pipeline est "confortable" et peut gérer les 200ms de pré
 
 Le module Oreille de Natacha s'appuie sur la technologie Faster-Whisper, une implémentation optimisée du modèle Whisper d'OpenAI utilisant
 le moteur CTranslate2. Ce choix technique est au cœur de la réactivité du système.
+</br>
+</br>
+> [!NOTE] Dans le cas ou vous n'avez aucun son au casque, essayer le script modules/ear/reset_audio_natacha.sh
+&nbsp;
+```
+chmod +x reset_audio_natacha.sh 
+./reset_audio_natacha.sh
+```
 
+</br>
 Natacha a désormais une structure de déploiement digne des meilleurs serveurs de production.
 
 Ton cluster est paré pour durer dans le temps ! 🚀
