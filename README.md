@@ -28,7 +28,7 @@ Natacha est un assistant personnel modulaire conçu pour fonctionner sur un clus
 
 &nbsp;
 
-# 🛠️ Installation & Déploiement
+# 🛠️ Installation & Déploiement :ear:
 
 📋 Prérequis Système
 
