@@ -575,6 +575,60 @@ Le cerveau s'abonne et publie sur les canaux suivants :
 
 
 
+# 👄 La Bouche (Nœud : Orange Pi 6 Plus)
+
+Le module "Bouche" assure la synthèse vocale (TTS) et le retour audio vers le nœud principal.
+ℹ️ Fonctionnement
+
+    MQTT : Le script écoute le topic natacha/reponse.
+
+    TTS (Piper) : Dès qu'un texte arrive, il est transformé en fichier WAV par Piper (modèle siwis-medium).
+
+    Streaming UDP : Le son n'est pas joué localement, mais envoyé via GStreamer en flux brut (S16LE, 22050Hz) vers l'IP du Ryzen sur le port 5000.
+
+⚙️ Installation du moteur Piper
+
+Le moteur Piper doit être installé manuellement dans /home/tvieil/piper_bin/.
+Bash
+
+# Téléchargement du modèle
+wget https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx -P /home/vieil/bouche_natacha/models/
+
+📡 Flux de données (GStreamer)
+
+    [!IMPORTANT]
+    Le pipeline GStreamer utilisé garantit une latence minimale pour que Natacha semble répondre instantanément :
+    udpsink host=192.168.1.90 port=5000
+
+
+
+Création du fichier de service : bouche_natacha.service
+
+```
+[Unit]
+Description=Bouche de Natacha - Synthèse Vocale (Piper/GStreamer)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=vieil
+Group=vieil
+WorkingDirectory=/home/vieil/Natacha-Project/modules/mouth
+
+# Utilisation de l'environnement Conda et du script renommé
+ExecStart=/home/tvieil/miniconda3/envs/tts_env/bin/python3 mouth_v10.py
+
+# Logs en temps réel pour journalctl -u bouche_natacha -f
+Environment=PYTHONUNBUFFERED=1
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
 Natacha a désormais une structure de déploiement digne des meilleurs serveurs de production.
 
 Ton cluster est paré pour durer dans le temps ! 🚀
