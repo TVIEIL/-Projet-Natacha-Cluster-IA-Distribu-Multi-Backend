@@ -314,6 +314,7 @@ chmod +x reset_audio_natacha.sh
 
 
 Le Cerveau est le centre de réflexion du cluster. Il héberge le moteur d'inférence LLM et traite les requêtes textuelles pour générer des réponses cohérentes.
+</br>
 ℹ️ Spécifications Techniques
 
     Processeur : Intel Core i5 (14ème Génération) - 12 Threads.
@@ -333,16 +334,52 @@ Le Cerveau est le centre de réflexion du cluster. Il héberge le moteur d'infé
 
         --threads 12 : Exploitation totale des capacités du Core i5.
 
+🛠️ Installation de llama.cpp
+
+```
+# 1. Récupération des sources
+git clone https://github.com/ggerganov/llama.cpp
+cd llama.cpp
+
+# 2. Compilation optimisée (via CMake)
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release
+```
+</br>
+
+📥 Gestion du Modèle (OpenHermes 2.5)
+
+Le modèle utilisé est un fichier au format GGUF, optimisé pour tourner sur CPU.
+
+    Récupération : Le modèle provient généralement du dépôt de TheBloke ou de Hugging Face.
+
+    Stockage : Pour plus de clarté, nous regroupons les modèles dans un dossier dédié :
+    Bash
+
+    ```
+    mkdir ~/modeles_natacha
+    cd ~/modeles_natacha
+    # Exemple de téléchargement (via wget ou curl)
+    wget https://huggingface.co/TheBloke/OpenHermes-2.5-Mistral-7B-GGUF/resolve/main/openhermes-2.5-mistral-7b.Q4_K_M.gguf
+    ```
+    
+    [!NOTE]
+    Le fichier de service llama-brain.service pointe directement vers ce chemin (/home/vieil/modeles_natacha/). Si tu déplaces le modèle, pense à mettre à jour le chemin dans le service !
+    
+</br>
+
 📜 Automatisation avec Systemd
 
 Le serveur d'intelligence démarre automatiquement avec le système. Le fichier de service se trouve dans scripts_systemd/brain/llama-brain.service.
 
 Commandes de gestion :
 Bash
-
+```
 sudo systemctl start llama-brain
 sudo systemctl status llama-brain
-
+```
 </br>
 Natacha a désormais une structure de déploiement digne des meilleurs serveurs de production.
 
