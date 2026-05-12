@@ -6,15 +6,9 @@
 # ENVIRONNEMENT : Ubuntu / Python 3 (Cerveau Central)
 # MATÉRIEL : i5-14500 
 # ==============================================================================
-#
-# DESCRIPTION :
-# Ce script (bridge) constitue le noyau cognitif de Natacha. Il orchestre :
-# 1. MÉMOIRE RELATIONNELLE : Accès aux souvenirs personnels de Thierry via ChromaDB.
-# 2. EXPERTISE DYNAMIQUE : Consultation des actualités filtrées par année.
-# 3. SAVOIR DÉTERMINISTE : Interrogation du serveur Kiwix local.
-# ==============================================================================
 
 import json, time, requests, chromadb, threading, re, locale
+import os  
 from datetime import datetime
 from chromadb.utils import embedding_functions
 import paho.mqtt.client as mqtt
@@ -24,28 +18,58 @@ import socket
 import queue
 from concurrent.futures import ThreadPoolExecutor
 import random
+from dotenv import load_dotenv, set_key
 
-# --- CONFIGURATION ---
-BROKER = "127.0.0.1"
-URL_SERVEUR = "http://127.0.0.1:8000/v1/chat/completions"
-URL_SLOTS = "http://127.0.0.1:8000/slots/0?action=release"
+# ==============================================================================
+# 1. GESTION DYNAMIQUE DE LA CONFIGURATION (.env)
+# ==============================================================================
+def charger_ou_creer_env():
+    env_path = ".env"
+    if not os.path.exists(env_path):
+        print("📁 Création du fichier .env avec les valeurs par défaut...")
+        with open(env_path, "w") as f:
+            f.write("# CONFIGURATION NATACHA - CERVEAU\n")
+            f.write("BROKER_IP=127.0.0.1\n")
+            f.write("LLAMA_SERVER_URL=http://127.0.0.1:8000/v1/chat/completions\n")
+            f.write("KIWIX_URL=http://192.168.1.100:8080\n")
+            f.write("CHROMA_PATH=./memoire_chroma\n")
+        print("✅ Fichier .env créé. Adaptez les IPs si nécessaire.")
+    
+    load_dotenv(env_path)
+
+# Chargement impératif avant l'initialisation des variables globales
+charger_ou_creer_env()
+
+# --- CONFIGURATION (Pilotée par le .env) ---
+BROKER = os.getenv("BROKER_IP", "127.0.0.1")
+URL_SERVEUR = os.getenv("LLAMA_SERVER_URL", "http://127.0.0.1:8000/v1/chat/completions")
+KIWIX_URL = os.getenv("KIWIX_URL", "http://192.168.1.100:8080")
+CHROMA_DIR = os.getenv("CHROMA_PATH", "./memoire_chroma")
+URL_SLOTS = URL_SERVEUR.replace("/v1/chat/completions", "/slots/0?action=release")
+
 TOPIC_QUESTION, TOPIC_REPONSE = "natacha/question", "natacha/reponse"
 TOPIC_APPRENDRE, TOPIC_RAZ = "natacha/apprendre", "natacha/raz_memoire"
-KIWIX_URL = "http://192.168.1.100:8080"
 
-#  On crée une file d'attente pour les questions d'une seule place
+# File d'attente pour les questions
 file_questions = queue.Queue(maxsize=1)
 
-# --- INITIALISATION ---
-try: locale.setlocale(locale.LC_TIME, "fr_FR.utf8")
-except: pass
+# ==============================================================================
+# 2. INITIALISATION DES COMPOSANTS
+# ==============================================================================
+try: 
+    locale.setlocale(locale.LC_TIME, "fr_FR.utf8")
+except: 
+    pass
 
 verrou_natacha = threading.Lock()
-chroma_client = chromadb.PersistentClient(path="./memoire_chroma")
+chroma_client = chromadb.PersistentClient(path=CHROMA_DIR)
 emb_fn = embedding_functions.DefaultEmbeddingFunction()
 coll_rel = chroma_client.get_or_create_collection(name="natacha_relation", embedding_function=emb_fn)
 coll_exp = chroma_client.get_or_create_collection(name="natacha_expertise", embedding_function=emb_fn)
 
+# ==============================================================================
+# 3. FONCTIONS OUTILS ET DIAGNOSTIC
+# ==============================================================================
 def obtenir_intro_naturelle():
     tournures = [
         "Alors Thierry, concernant ta question :",
@@ -55,56 +79,23 @@ def obtenir_intro_naturelle():
         "Pour répondre à ta demande :",
         "Alors, sur ce point précis :",
         "Tiens, voici ce que j'ai trouvé :",
-        "" # Parfois, commencer directement est encore plus naturel
+        "" 
     ]
     return random.choice(tournures)
 
-def worker_natacha():
-    while True:
-        try:
-            type_action, donnee = file_questions.get()
-            print(f"⚙️ Worker : Action reçue -> {type_action}")
-        
-            with verrou_natacha:
-                if type_action == "QUESTION":
-                    traiter_question(donnee, client)
-            
-                elif type_action == "APPRENDRE":
-                    contenu_pur = donnee.split(":", 1)[1].strip() if ":" in donnee else donnee.strip()
-                    deja_connu = coll_exp.get(where_document={"$contains": contenu_pur})
-                    
-                    if not deja_connu['ids']:
-                        print(f"📝 Nouvelle info détectée : {contenu_pur[:50]}...")
-                        coll_exp.add(documents=[donnee], ids=[f"exp_{int(time.time())}"])
-                    else:
-                        print(f"🚫 Doublon ignoré : {contenu_pur[:50]}...")
-            
-                elif type_action == "RAZ":
-                    print("Sweep : Réinitialisation de la mémoire...")
-                    coll_rel.delete(where={})
-                    coll_exp.delete(where={})
-                        
-        except Exception as e:
-            print(f"❌ Erreur critique dans le Worker : {e}")
-        finally:
-            file_questions.task_done()
-
 def verifier_sante_systeme():
     config = {
-        "Kiwix (Savoir)": ("192.168.1.100", 8080),
-        "MQTT (Reseau)": ("127.0.0.1", 1883),  # Ou l'IP de ton broker
+        "Kiwix (Savoir)": (KIWIX_URL.split("//")[1].split(":")[0], int(KIWIX_URL.split(":")[-1])),
+        "MQTT (Reseau)": (BROKER, 1883),
     }
-    
     rapport = {}
     print("🔍 DIAGNOSTIC SYSTÈME EN COURS...")
-
     for service, (ip, port) in config.items():
         try:
             with socket.create_connection((ip, port), timeout=2):
                 rapport[service] = "✅ OK"
-        except (socket.timeout, ConnectionRefusedError):
+        except:
             rapport[service] = "❌ HORS LIGNE"
-
     return rapport
 
 def extraire_connaissance_wiki(sujet):
@@ -119,8 +110,11 @@ def extraire_connaissance_wiki(sujet):
     except Exception as e:
         print(f"⚠️ Erreur de liaison Kiwix : {e}")
     return None
-        
-def traiter_question(question, client):
+
+# ==============================================================================
+# 4. LOGIQUE MÉTIER ET TRAITEMENT
+# ==============================================================================
+def traiter_question(question, client_mqtt):
     print("  [Step 1] Début du traitement parallélisé...")
     global KIWIX_OK
     q_low = question.lower()
@@ -129,7 +123,6 @@ def traiter_question(question, client):
     now = datetime.now()
     h_str = now.strftime("%A %d %B %Y à %Hh%M")
     
-    # Détection de l'année ciblée pour la recherche d'actualités
     annee_cible = str(now.year)
     match_annee = re.search(r'\b(20[0-9]{2})\b', q_low)
     if match_annee:
@@ -144,11 +137,9 @@ def traiter_question(question, client):
     veut_memoriser = any(m in q_low for m in mots_save)
     veut_chercher_news = any(m in q_low for m in mots_news) or match_annee is not None
 
-    # --- EXÉCUTION PARALLÈLE ---
     with ThreadPoolExecutor(max_workers=2) as executor:
         futur_souvenirs = executor.submit(emb_fn, [question])
         futur_wiki = None
-        
         mots_cles_techniques = ["physique", "tension", "kiwix", "wiki", "recherche", "zim"]
         if KIWIX_OK and any(mot in q_low for mot in mots_cles_techniques):
             print("  [Step 3] Lancement Kiwix parallèle...")
@@ -156,44 +147,32 @@ def traiter_question(question, client):
 
         try:
             q_vec = futur_souvenirs.result(timeout=10)[0]
-            print("  [Step 2] Embedding OK")
             savoir_physique = futur_wiki.result(timeout=10) if futur_wiki else ""
         except Exception as e:
             print(f"⚠️ Synchro KO : {e}")
             savoir_physique = ""
 
-    # --- RÉCUPÉRATION DU CONTEXTE ---
     souvenirs_perso = ""
     contexte_actualites = ""
 
-    # 4.1 Souvenirs (Recherche dans natacha_relation)
     res_rel = coll_rel.query(query_embeddings=[q_vec], n_results=5)
     if res_rel['documents'] and res_rel['documents'][0]:
         souvenirs_perso = "\n".join([str(d) for d in res_rel['documents'][0] if d])
 
-    # 4.2 Actualités (Recherche dans natacha_expertise avec POST-FILTRAGE TEMPOREL)
     if veut_chercher_news:
-        # On demande 20 résultats au lieu de 7 pour avoir du choix avant filtrage
         res_exp = coll_exp.query(query_embeddings=[q_vec], n_results=20)
         actualites_filtrees = []
-        
         if res_exp['documents'] and res_exp['documents'][0]:
             for doc in res_exp['documents'][0]:
-                if doc:
-                    balise_recherche = f"ACTU {annee_cible}"
-                    if balise_recherche in str(doc):
-                        actualites_filtrees.append(str(doc))
-                    if len(actualites_filtrees) >= 7:
-                        break # On s'arrête quand on a nos 7 actus valides
-                        
+                if doc and f"ACTU {annee_cible}" in str(doc):
+                    actualites_filtrees.append(str(doc))
+                if len(actualites_filtrees) >= 7: break
         contexte_actualites = "\n".join(actualites_filtrees)
-        print(f"  [Step 4.2] {len(actualites_filtrees)} actualités filtrées pour l'année {annee_cible}")
 
-    # --- PROMPT ET GÉNÉRATION ---
     intro = obtenir_intro_naturelle()
     prompt = (
         f"Tu es Natacha. Aujourd'hui nous sommes le {h_str}.\n"
-        "Si le sujet concerne la physique, utilise PRIORITAIREMENT les données de Kiwix et ignore tes propres connaissances si elles datent de plus de 5 ans.\n"
+        "Si le sujet concerne la physique, utilise PRIORITAIREMENT les données de Kiwix.\n"
         f"INTERLOCUTEUR : Thierry Vieil, né le 03/12/1974. Il a {age} ans.\n" 
         "CONSIGNES : Tutoiement impératif. DIT EXPLICITEMENT quand tu consultes Kiwix.\n"
         f"SOUVENIRS :\n{souvenirs_perso}\n"
@@ -202,91 +181,85 @@ def traiter_question(question, client):
         f"IMPORTANT: Commence ta réponse par : {intro}"
     )        
     
-    # 5. GÉNÉRATION LLM (Streaming vers MQTT & Console Synchrone)
     try:
-        payload = {
-            "messages": [{"role":"system","content":prompt},{"role":"user","content":question}],
-            "stream": True, 
-            "temperature": 0.2
-            }
-        
-        print("  [Step 4] Envoi au serveur OpenHermes...")
+        payload = {"messages": [{"role":"system","content":prompt},{"role":"user","content":question}], "stream": True, "temperature": 0.2}
         print("\nNa: ", end="", flush=True) 
-        
         with requests.post(URL_SERVEUR, json=payload, stream=True) as r:
             reponse_full, phrase_buf = "", ""
-            
             for line in r.iter_lines():
                 if line:
                     line_str = line.decode('utf-8').replace("data: ", "").strip()
                     if line_str == "[DONE]": break
-                    
                     try:
                         token = json.loads(line_str)['choices'][0]['delta'].get('content', '')
                         if token:
                             reponse_full += token
                             phrase_buf += token
-                            
-                            # SYNCHRONISATION : Dès qu'une phrase est terminée
                             if any(p in token for p in [".", "!", "?", "\n"]):
-                                client.publish(TOPIC_REPONSE, phrase_buf.strip())
+                                client_mqtt.publish(TOPIC_REPONSE, phrase_buf.strip())
                                 print(phrase_buf.strip(), end=" ", flush=True)
                                 phrase_buf = ""
                     except: continue
-                    
-        print("\n\n  [Step 5] Réponse terminée et prononcée.\n")
+        print("\n\n  [Step 5] Réponse terminée.\n")
 
-        # 6. MÉMORISATION
         if veut_memoriser:
             info = question
-            for t in mots_save:
-                info = re.compile(re.escape(t), re.IGNORECASE).sub("", info).strip()
+            for t in mots_save: info = re.compile(re.escape(t), re.IGNORECASE).sub("", info).strip()
             if len(info) > 3:
                 coll_rel.add(documents=[info], ids=[f"rel_{int(time.time())}"])
                 print(f"💾 Info mémorisée : {info}")
-
     except Exception as e:
-        print(f"❌ Erreur critique durant le processing : {e}")
+        print(f"❌ Erreur critique : {e}")
 
-# --- MQTT ---
+# ==============================================================================
+# 5. WORKER ET MQTT
+# ==============================================================================
+def worker_natacha():
+    while True:
+        try:
+            type_action, donnee = file_questions.get()
+            with verrou_natacha:
+                if type_action == "QUESTION": traiter_question(donnee, client)
+                elif type_action == "APPRENDRE":
+                    contenu_pur = donnee.split(":", 1)[1].strip() if ":" in donnee else donnee.strip()
+                    if not coll_exp.get(where_document={"$contains": contenu_pur})['ids']:
+                        coll_exp.add(documents=[donnee], ids=[f"exp_{int(time.time())}"])
+                        print(f"📝 Appris : {contenu_pur[:50]}...")
+                elif type_action == "RAZ":
+                    coll_rel.delete(where={})
+                    coll_exp.delete(where={})
+                    print("Sweep : Mémoire réinitialisée.")
+        except Exception as e: print(f"❌ Erreur Worker : {e}")
+        finally: file_questions.task_done()
+
 def on_message(client, userdata, msg):
     p = msg.payload.decode()
-    
     action = None
-    if msg.topic == TOPIC_QUESTION:
-        action = ("QUESTION", p)
-    elif msg.topic == TOPIC_APPRENDRE:
-        action = ("APPRENDRE", p)
-    elif msg.topic == TOPIC_RAZ and p == "CONFIRM_RAZ":
-        action = ("RAZ", None)
-
+    if msg.topic == TOPIC_QUESTION: action = ("QUESTION", p)
+    elif msg.topic == TOPIC_APPRENDRE: action = ("APPRENDRE", p)
+    elif msg.topic == TOPIC_RAZ and p == "CONFIRM_RAZ": action = ("RAZ", None)
     if action:
-        try:
-            file_questions.put(action, block=False)
-        except queue.Full:
-            print(f"⚠️ Système saturé, action {action[0]} ignorée.")
-            
-# Utilisation au démarrage de Natacha
+        try: file_questions.put(action, block=False)
+        except queue.Full: print("⚠️ Système saturé.")
+
+# ==============================================================================
+# 6. LANCEMENT
+# ==============================================================================
 status = verifier_sante_systeme()
 KIWIX_OK = (status.get("Kiwix (Savoir)") == "✅ OK")
 
-for service, etat in status.items():
-    print(f"[{etat}] {service}")
-    
-if "❌ HORS LIGNE" in status.values():
-    print("\n⚠️ ALERTE : Natacha risque de fonctionner en mode dégradé.")
-
-KIWIX_OK = (status.get("Kiwix (Savoir)") == "✅ OK")
-
-if not KIWIX_OK:
-    print("\n⚠️ ALERTE : KIWIX Ko! Natacha en mode dégradé.")
+for service, etat in status.items(): print(f"[{etat}] {service}")
 
 client = mqtt.Client(callback_api_version=CallbackAPIVersion.VERSION2)
 client.on_message = on_message
-client.connect(BROKER, 1883)
-client.subscribe([(TOPIC_QUESTION, 0), (TOPIC_APPRENDRE, 0), (TOPIC_RAZ, 0)])
+
+try:
+    client.connect(BROKER, 1883)
+    client.subscribe([(TOPIC_QUESTION, 0), (TOPIC_APPRENDRE, 0), (TOPIC_RAZ, 0)])
+except Exception as e:
+    print(f"❌ Connexion Broker Impossible ({BROKER}) : {e}")
+    exit(1)
 
 threading.Thread(target=worker_natacha, daemon=True).start()
-
-print(f"🚀 Natacha v33.12 en ligne. (Filtrage Temporel ChromaDB)")
+print(f"🚀 Natacha v33.12 en ligne. (DB: {CHROMA_DIR})")
 client.loop_forever()
