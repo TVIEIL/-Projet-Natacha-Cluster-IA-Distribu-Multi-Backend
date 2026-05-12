@@ -159,7 +159,7 @@ Pour que le nœud démarre tout seul avec la machine tout en restant consultable
 Créez le fichier de service :
 
 ```
-sudo nano /etc/systemd/system/natacha_oreille.service
+sudo nano /etc/systemd/system/oreille_natacha.service
 ```
 
 Collez la configuration suivante (adaptez vieil par votre nom d'utilisateur) :
@@ -184,13 +184,13 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 ```
-CTRL + o pour sauver puis CTRL + x pour sortir de nano
+CTRL + o puis 'entrée' pour sauver le fichier, puis CTRL + x pour sortir de nano
 
 Activez et lancez le service :
 
 ```
-sudo systemctl enable natacha_oreille.service
-sudo systemctl start natacha_oreille.service
+sudo systemctl enable oreille_natacha.service
+sudo systemctl start oreille_natacha.service
 ```
 
 ## 7. Monitoring au quotidien
@@ -198,8 +198,11 @@ sudo systemctl start natacha_oreille.service
 Grâce à screen, le nœud tourne en tâche de fond mais reste accessible à tout moment :
 
 ```
-screen -r natacha_oreille
+screen -r oreille_natacha
 ```
+
+![oreille_natacha_v_1_30.py](oreille_natacha_v_1_30.png)
+
 
 Quitter l'affichage sans couper l'IA : Appuyez sur Ctrl+A puis D (Détacher).
 
@@ -210,6 +213,44 @@ Quitter l'affichage sans couper l'IA : Appuyez sur Ctrl+A puis D (Détacher).
 On utilise le micro casque USB sur la carte ou ordinateur RYZEN 5 "oreille".
 La carte reçoit un flux audio provenant de l'orangepi6plus la "Bouche".
 Le casque USB va restituer la synthèse vocale provenant de la "Bouche"
+
+
+Création du service gstream_natacha.service
+```
+sudo nano /etc/systemd/system/gstream_natacha.service
+```
+
+Ajouter le code suivant :
+```
+[Unit]
+Description=GStreamer Receiver pour Natacha (Bouche)
+After=network.target
+
+[Service]
+Type=simple
+User=vieil
+Group=vieil
+WorkingDirectory=/home/vieil/oreille_natacha
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+ExecStart=/usr/bin/python3 /home/vieil/oreille_natacha/bouche_receveur_final_v1_0.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
+```
+CTRL + o puis 'entrée' pour sauver le fichier, puis CTRL + x pour sortir de nano
+
+Modifier le nom de l'utilisateur vieil par le votre.
+
+
+Activez et lancez le service :
+
+```
+sudo systemctl enable gstream_natacha.service
+sudo systemctl start gstream_natacha.service
+```
+
 
 ⚙️ Optimisation du flux Audio (UDP)
 
