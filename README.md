@@ -509,6 +509,45 @@ pip install chromadb paho-mqtt beautifulsoup4 requests python-dotenv
 Au premier lancement, le script crée automatiquement le dossier ./memoire_chroma pour stocker les souvenirs et l'expertise.
 
 &nbsp;
+
+4. Création du fichier service  cerveau_natacha.service
+```
+sudo nano /etc/systemd/system/cerveau_natacha.service
+```
+5. Ajoute le code suivant (adapte le nom de l'utilisateur) :
+```
+[Unit]
+Description=Cerveau de Natacha - Pont Intelligence (MQTT/ChromaDB/Kiwix)
+# On attend que le réseau, le broker MQTT ET le serveur llama.cpp soient prêts
+After=network-online.target mosquitto.service llama-brain.service
+Requires=mosquitto.service llama-brain.service
+
+[Service]
+Type=simple
+User=vieil
+Group=vieil
+# On pointe vers le dossier du projet GitHub
+WorkingDirectory=/home/vieil/Natacha-Project/modules/brain
+
+ExecStart=/home/vieil/miniconda3/envs/cerveau_natacha/bin/python3 brain_v33_12.py
+
+# Pour voir les logs en temps réel avec journalctl -u cerveau_natacha -f
+Environment=PYTHONUNBUFFERED=1
+
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+6. Activation du service
+```
+sudo systemctl daemon-reload
+sudo systemctl enable cerveau_natacha.service
+sudo systemctl start cerveau_natacha.service
+```
+
+
 &nbsp;
 
 📡 Topologies des Flux (MQTT)
@@ -526,6 +565,8 @@ Le cerveau s'abonne et publie sur les canaux suivants :
     . natacha/raz_memoire 🚨 Réinitialisation complète de ChromaDB.
 
 </br>
+
+
 
 Natacha a désormais une structure de déploiement digne des meilleurs serveurs de production.
 
