@@ -195,6 +195,7 @@ CTRL + o puis 'entrée' pour sauver le fichier, puis CTRL + x pour sortir de nan
 Activez et lancez le service :
 
 ```
+sudo systemctl daemon-reload
 sudo systemctl enable oreille_natacha.service
 sudo systemctl start oreille_natacha.service
 ```
@@ -253,6 +254,7 @@ Modifier le nom de l'utilisateur vieil par le votre.
 Activez et lancez le service :
 
 ```
+sudo systemctl daemon-reload
 sudo systemctl enable gstream_natacha.service
 sudo systemctl start gstream_natacha.service
 ```
@@ -412,6 +414,8 @@ Il s'occupe du démarrage automatique de llama.cpp au démarrage du cerveau.
 Commandes de gestion :
 
 ```
+sudo systemctl daemon-reload
+sudo systemctl enable natacha-brain.service
 sudo systemctl start natacha-brain.service
 sudo systemctl status natacha-brain.service
 ```
