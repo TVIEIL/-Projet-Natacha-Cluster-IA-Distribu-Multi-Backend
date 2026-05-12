@@ -149,12 +149,12 @@ try:
                                 time.sleep(8)
                                 execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl restart mosquitto.service")
                                 execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl restart natacha-brain.service")
-                                execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl restart cerveau_de_natacha.service")
+                                execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl restart cerveau_natacha.service")
                                 execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl restart kiwix.service")
                                 execute_remote_command(BOUCHE_IP, CREDS["bouche"]["user"], CREDS["bouche"]["pass"], "systemctl restart bouche_de_natacha.service") 
                                 cmd_oreille_gst = "killall -9 gst-launch-1.0 ; systemctl restart gstream-natacha.service"
                                 execute_remote_command(OREILLE_IP, CREDS["oreille"]["user"], CREDS["oreille"]["pass"], cmd_oreille_gst)
-                                execute_remote_command(OREILLE_IP, CREDS["oreille"]["user"], CREDS["oreille"]["pass"], "systemctl restart Oreille-Natacha.service")                                
+                                execute_remote_command(OREILLE_IP, CREDS["oreille"]["user"], CREDS["oreille"]["pass"], "systemctl restart oreille_natacha.service.service")                                
                                                 
                             # CAS 2 : ARRÊT TOTAL
                             elif any(act in text for act in ACT_ARRET) and any(suj in text for suj in SUJ_ARRET):
