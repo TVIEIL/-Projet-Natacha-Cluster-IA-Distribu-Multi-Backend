@@ -581,9 +581,9 @@ Ton cluster est paré pour durer dans le temps ! 🚀
 
 | Hardware | Backend Accelerators | Utilisation Optimale |
 | :--- | :--- | :--- |
-| **Intel Core** | Core I5 14400 32Go RAM| Cerveau (Ultra-rapide) |
-| **AMD Ryzen** | Ryzen 5 5500u (AVX-512) / ROCm 32 Go RAM| Oreille (Faster-Whisper) |
-| **Rockchip (OPi 6+)** | CIX CD8180/CD8160 SoC 32 Go RAM| Bouche TTS / Audio -Transfert UDP |
+| **Intel Core** | Core I5 14400; 32Go RAM| Cerveau (Ultra-rapide) |
+| **AMD Ryzen** | Ryzen 5 5500u (AVX-512) / ROCm; 32 Go RAM| Oreille (Faster-Whisper) |
+| **Rockchip (OPi 6+)** | CIX CD8180/CD8160 SoC; 32 Go RAM| Bouche TTS / Audio -Transfert UDP |
 
 &nbsp;
 
