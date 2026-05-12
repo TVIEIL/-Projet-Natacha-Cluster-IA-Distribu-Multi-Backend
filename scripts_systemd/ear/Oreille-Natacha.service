@@ -1,17 +1,24 @@
-[Unit]
-Description=Oreille de Natacha - Whisper Service
-After=network.target
+After=network.target pulseaudio.service
 
 [Service]
-Type=forking
+# On utilise l'utilisateur pour l'accès aux droits audio
 User=vieil
-WorkingDirectory=/home/vieil/oreille_natacha
-# On lance screen en mode détaché (-dmS) avec le nom de session souhaité
-ExecStart=/usr/bin/screen -dmS oreille_natacha /home/vieil/anaconda3/envs/oreille_natacha/bin/python oreille_v1_17_STABLE_RELOAD.py
-# Commande pour fermer proprement la session screen à l'arrêt du service
-ExecStop=/usr/bin/screen -S oreille_natacha -X quit
+Group=vieil
+
+# Dossier où se trouve ton script et ton .env
+WorkingDirectory=/home/vieil/Natacha-Project/modules/ear
+
+# Environnement nécessaire pour Ubuntu 24.04 et PulseAudio
+Environment="XDG_RUNTIME_DIR=/run/user/1000"
+Environment=PYTHONUNBUFFERED=1
+
+# Exécution directe sans screen
+ExecStart=/home/vieil/miniconda3/envs/natacha_oreille/bin/python3 bouche_receveur_final_v1_0.py
+
+# Redémarrage automatique en cas de souci
 Restart=always
 RestartSec=5
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
+
