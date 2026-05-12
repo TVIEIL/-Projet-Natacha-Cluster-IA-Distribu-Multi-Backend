@@ -257,6 +257,17 @@ sudo systemctl enable gstream_natacha.service
 sudo systemctl start gstream_natacha.service
 ```
 
+On peut visualiser le status du service en tapant :
+
+```
+systemctl status gstream-natacha
+```
+
+
+![Status bouche_receveur_final_v_1_0](bouche_receveur_final_v_1_0.png)
+
+
+</br>
 
 ⚙️ Optimisation du flux Audio (UDP)
 
