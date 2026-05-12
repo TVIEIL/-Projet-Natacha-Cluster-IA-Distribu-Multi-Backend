@@ -590,9 +590,11 @@ Le module "Bouche" assure la synthèse vocale (TTS) et le retour audio vers le n
 
 Le moteur Piper doit être installé manuellement dans /home/tvieil/piper_bin/.
 Bash
-
+```
 # Téléchargement du modèle
 wget https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx -P /home/vieil/bouche_natacha/models/
+```
+
 
 📡 Flux de données (GStreamer)
 
@@ -627,6 +629,22 @@ RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
+```
+
+🛠️ Rappel : Mise à jour du système
+
+N'oublier pas qu'il faut passer ces trois commandes pour que Linux prenne en compte ce nouveau service
+Bash
+
+```
+# 1. On dit à systemd de relire les fichiers
+sudo systemctl daemon-reload
+
+# 2. On active le nouveau nom au démarrage
+sudo systemctl enable bouche_natacha.service
+
+# 3. On peut vérifier que tout tourne
+sudo systemctl status bouche_natacha.service
 ```
 
 Natacha a désormais une structure de déploiement digne des meilleurs serveurs de production.
