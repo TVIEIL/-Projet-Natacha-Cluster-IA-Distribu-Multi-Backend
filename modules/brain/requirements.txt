@@ -6,7 +6,7 @@ paho-mqtt>=2.0.0
 chromadb
 
 # --- Analyse Web (Kiwix) ---
-beautifulsoup4
+#beautifulsoup4
 
 # --- Gestion de la Configuration ---
 python-dotenv
