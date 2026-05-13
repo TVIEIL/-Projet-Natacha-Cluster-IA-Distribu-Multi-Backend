@@ -13,7 +13,7 @@ from datetime import datetime
 from chromadb.utils import embedding_functions
 import paho.mqtt.client as mqtt
 from paho.mqtt.enums import CallbackAPIVersion
-from bs4 import BeautifulSoup
+#from bs4 import BeautifulSoup
 import socket
 import queue
 from concurrent.futures import ThreadPoolExecutor
