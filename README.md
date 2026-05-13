@@ -727,11 +727,9 @@ Ce projet utilise Kiwix en tant que source de savoir locale (RAG). Pour obtenir 
 
 il est recommandé d'utiliser le fichier suivant :
 
-    ZIM : wikipedia_fr_physics_maxi (Version 2026-04 ou ultérieure).
-
-    Lien : [Lien vers la bibliothèque Kiwix]
-
-    Note : Si vous utilisez un autre fichier .zim, modifiez la variable NOM_LIVRE dans le script.
+* **Fichier préconisé :** `wikipedia_fr_physics_maxi_2026-04.zim` (ou version plus récente).
+* **Lien de téléchargement :** [https://download.kiwix.org/zim/wikipedia/](https://download.kiwix.org/zim/wikipedia/)
+* **Configuration :** Placez le fichier dans votre dossier Kiwix et assurez-vous que l'IP dans le fichier `.env` pointe vers votre serveur Kiwix-serve (port 8080 par défaut).
 
 &nbsp;
 
