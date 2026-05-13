@@ -721,6 +721,20 @@ Natacha utilise une segmentation réseau pour garantir la stabilité :
 
 &nbsp;
 
+## 📚 Base de Connaissances
+
+Ce projet utilise Kiwix en tant que source de savoir locale (RAG). Pour obtenir les mêmes résultats que dans les démos (électronique, physique),
+
+il est recommandé d'utiliser le fichier suivant :
+
+    ZIM : wikipedia_fr_physics_maxi (Version 2026-04 ou ultérieure).
+
+    Lien : [Lien vers la bibliothèque Kiwix]
+
+    Note : Si vous utilisez un autre fichier .zim, modifiez la variable NOM_LIVRE dans le script.
+
+&nbsp;
+
 ## 📝 Roadmap
 
 * [ ] Support complet des NPU Intel via OpenVINO.
