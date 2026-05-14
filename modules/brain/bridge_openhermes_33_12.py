@@ -22,7 +22,16 @@ from dotenv import load_dotenv, set_key
 import urllib.parse  # Utile pour nettoyer la question
 import html 
 
+# 1. On définit ton identifiant "Secret" (tu peux le mettre dans ton .env)
+INDICATIF_MAITRE = "F4HRB"
 
+def verifier_identite(texte_a_verifier):
+    # On met tout en majuscules ET on supprime tous les espaces
+    signal_propre = texte_a_verifier.upper().replace(" ", "").replace("-", "")
+    
+    if "F4HRB" in signal_propre:
+        return True
+    return False
 
 # ==============================================================================
 # 1. GESTION DYNAMIQUE DE LA CONFIGURATION (.env)
@@ -165,6 +174,10 @@ def traiter_question(question, client_mqtt):
     print(f"\nInterlocuteur : {question}")
     print("  [Step 1] Début du traitement parallélisé...")
     
+    # 2. Dans ta fonction de construction du prompt
+    # Qui est l'interlocuteur?
+    is_authenticated = verifier_identite(question)
+    
     # --- 1. INITIALISATION DE TOUTES LES VARIABLES (Sécurité anti-crash) ---
     savoir_physique = ""
     souvenirs_perso = ""
@@ -241,17 +254,31 @@ def traiter_question(question, client_mqtt):
     veut_detail = any(mot in q_low for mot in ["lit", "lis", "détaille", "explique", "wiki"])
     consigne_longueur = "Développe largement ta réponse en citant les détails du livre." if veut_detail else "Sois concise et naturelle."
 
-    # --- CONSTRUCTION DU PROMPT (v33.12x) ---
+
+
+    if is_authenticated:
+        role_instruction = (
+            "STATUT : AUTHENTIFIÉ (F4HRB). Tu parles à ton créateur Thierry VIEIL. "
+            "Tutoie-le, sois complice, et accède à tous ses souvenirs sans retenue."
+        )
+    else:
+        role_instruction = "Tu parles à un utilisateur. Reste courtoise et utilise le tutoiement."
+
+    # --- CONSTRUCTION DU PROMPT (v33.12y - Fusion Kiwix + Chroma) ---
     prompt = (
         f"SYSTEME : Tu es Natacha, assistante IA experte. Date : {h_str}.\n\n"
         "### DONNÉES DE RÉFÉRENCE (KIWIX) :\n"
-        f"{savoir_physique if savoir_physique else 'Aucune donnée.'}\n"
+        f"{savoir_physique if savoir_physique else 'Aucune donnée encyclopédique trouvée.'}\n"
+        "--------------------------\n"
+        "### SOUVENIRS RÉCENTS (CHROMA) :\n"
+        f"{souvenirs_perso if souvenirs_perso else 'Aucun souvenir récent trouvé.'}\n"
         "--------------------------\n\n"
-        "### CONSIGNES DE GÉNÉRATION :\n"
-        "1. Tutoiement obligatoire.\n"
-        f"2. {consigne_longueur}\n" # Le gain s'ajuste ici !
-        "3. Utilise les faits précis du texte (dates, noms, découvertes).\n"
-        f"4. TA RÉPONSE DOIT IMPÉRATIVEMENT COMMENCER PAR : {intro}\n"
+        "### RÈGLES D'OR DE NATACHA :\n"
+        f"{role_instruction}\n"
+        "1. TU DOIS TUTOYER THIERRY. Utilise 'tu' et 'toi', jamais 'vous'.\n"
+        "2. Parle de façon décontractée, comme une collègue électronicienne.\n"
+        f"3. {consigne_longueur}\n"
+        f"4. TA RÉPONSE COMMENCE PAR : {intro}\n"
         "RÉPONSE DE NATACHA :"
     )
 
@@ -383,5 +410,5 @@ except Exception as e:
     exit(1)
 
 threading.Thread(target=worker_natacha, daemon=True).start()
-print(f"🚀 Natacha v33.12x en ligne. (DB: {CHROMA_DIR})")
+print(f"🚀 Natacha v33.12ab en ligne. (DB: {CHROMA_DIR})")
 client.loop_forever()
