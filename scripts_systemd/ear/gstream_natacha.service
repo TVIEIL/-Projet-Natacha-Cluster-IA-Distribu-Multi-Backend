@@ -10,8 +10,8 @@ WorkingDirectory=/home/vieil/Natacha-Project/modules/ear
 
 Environment=XDG_RUNTIME_DIR=/run/user/1000
 
-# Correction : Nouveau chemin vers le script de la bouche
-ExecStart=/usr/bin/python3 /home/vieil/Natacha-Project/modules/ear/bouche_receveur_final_v1_0.py
+# On utilise le même environnement Conda pour garantir la présence des librairies
+ExecStart=/home/vieil/miniconda3/envs/oreille_natacha/bin/python3 /home/vieil/Natacha-Project/modules/ear/bouche_receveur_final_v1_0.py
 
 Restart=always
 RestartSec=5
