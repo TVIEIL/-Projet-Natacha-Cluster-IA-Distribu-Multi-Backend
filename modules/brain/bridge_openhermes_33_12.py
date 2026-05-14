@@ -199,6 +199,20 @@ def traiter_question(question, client_mqtt):
     match_annee = re.search(r'\b(20[0-9]{2})\b', q_low)
     if match_annee: annee_cible = match_annee.group(1)
 
+# --- AJOUT : EXTRACTION PRÉCISE DE LA DATE ---
+    date_formatee = annee_cible
+    mois_map = {
+        "janvier": "01", "février": "02", "mars": "03", "avril": "04", "mai": "05", "juin": "06",
+        "juillet": "07", "août": "08", "septembre": "09", "octobre": "10", "novembre": "11", "décembre": "12"
+    }
+    
+    # On cherche un motif type "14 mai" dans la question
+    match_date = re.search(r'(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)', q_low)
+    if match_date:
+        jour = match_date.group(1).zfill(2)
+        mois = mois_map.get(match_date.group(2))
+        date_formatee = f"{annee_cible}-{mois}-{jour}" # Résultat : "2026-05-14"
+
     anniv_passe = (now.month > 12) or (now.month == 12 and now.day >= 3)
     age = (now.year - 1974) if anniv_passe else (now.year - 1974 - 1)
 
@@ -238,17 +252,30 @@ def traiter_question(question, client_mqtt):
 
     # --- 3. RÉCUPÉRATION DE LA MÉMOIRE (ChromaDB) ---
     if q_vec is not None:
-        # Souvenirs personnels
+        # Souvenirs personnels (Inchangé)
         res_rel = coll_rel.query(query_embeddings=[q_vec], n_results=5)
         if res_rel['documents'] and res_rel['documents'][0]:
             souvenirs_perso = "\n".join([str(d) for d in res_rel['documents'][0] if d])
 
-        # Actualités 2026
+        # Actualités : On passe en mode précision
         if veut_chercher_news:
-            res_exp = coll_exp.query(query_embeddings=[q_vec], n_results=20)
+            # On augmente n_results à 50 pour être sûr de "balayer" toutes les actus du jour
+            res_exp = coll_exp.query(query_embeddings=[q_vec], n_results=50)
+            
             if res_exp['documents'] and res_exp['documents'][0]:
-                actualites_filtrees = [str(doc) for doc in res_exp['documents'][0] if doc and f"ACTU {annee_cible}" in str(doc)]
-                contexte_actualites = "\n".join(actualites_filtrees[:7])
+                # CORRECTION ICI : On utilise date_formatee pour ne garder que le jour précis
+                actualites_filtrees = [
+                    str(doc) for doc in res_exp['documents'][0] 
+                    if doc and f"ACTU {date_formatee}" in str(doc)
+                ]
+                
+                # On augmente aussi le nombre de news envoyées au LLM pour un vrai résumé
+                contexte_actualites = "\n".join(actualites_filtrees[:15])
+                
+                if actualites_filtrees:
+                    print(f"  [OK] {len(actualites_filtrees)} news trouvées pour le {date_formatee}.")
+                else:
+                    print(f"  [DEBUG] Aucune news dans Chroma pour la date : {date_formatee}")
 
     # --- 4. CONSTRUCTION DU PROMPT ET ENVOI LLM ---
     # --- CONSTRUCTION DU PROMPT (v33.12w) ---
@@ -271,23 +298,51 @@ def traiter_question(question, client_mqtt):
     else:
         role_instruction = "Tu parles à un utilisateur. Reste courtoise et utilise le tutoiement."
 
-    # --- CONSTRUCTION DU PROMPT (v33.12y - Fusion Kiwix + Chroma) ---
+    
+    # --- CONSTRUCTION DU PROMPT (v33.12ag - Correction news & syntaxe) ---
     prompt = (
-        f"SYSTEME : Tu es Natacha, assistante IA experte. Date : {h_str}.\n\n"
+        f"SYSTEME : Tu es Natacha, assistante IA experte. Nous sommes le {h_str}.\n\n"
+        "### ACTUALITÉS DU JOUR (Extraites de ChromaDB) :\n"
+        f"{contexte_actualites if contexte_actualites else 'Aucune actualité trouvée pour cette date.'}\n"
+        "--------------------------\n"
         "### DONNÉES DE RÉFÉRENCE (KIWIX) :\n"
         f"{savoir_physique if savoir_physique else 'Aucune donnée encyclopédique trouvée.'}\n"
         "--------------------------\n"
-        "### SOUVENIRS RÉCENTS (CHROMA) :\n"
+        "### SOUVENIRS PERSONNELS (CHROMA) :\n"
         f"{souvenirs_perso if souvenirs_perso else 'Aucun souvenir récent trouvé.'}\n"
         "--------------------------\n\n"
         "### RÈGLES D'OR DE NATACHA :\n"
         f"{role_instruction}\n"
         "1. TU DOIS TUTOYER THIERRY. Utilise 'tu' et 'toi', jamais 'vous'.\n"
-        "2. Parle de façon décontractée, comme une collègue électronicienne.\n"
-        f"3. {consigne_longueur}\n"
-        f"4. TA RÉPONSE COMMENCE PAR : {intro}\n"
+        "2. ANALYSE GLOBALE : Ne dis jamais qu'une date est fictive. Synthétise TOUTES les actualités fournies ci-dessus pour faire un résumé complet.\n"
+        "3. Parle de façon décontractée, comme une collègue électronicienne.\n"
+        f"4. {consigne_longueur}\n"
+        f"5. TA RÉPONSE COMMENCE PAR : {intro}\n"
         "RÉPONSE DE NATACHA :"
     )
+
+
+    # --- CONSTRUCTION DU PROMPT (v33.12af - Correction news) ---
+    #prompt = (
+    #    f"SYSTEME : Tu es Natacha, assistante IA experte. Nous sommes le {h_str}.\n\n"
+    #    "### ACTUALITÉS DU JOUR (Extraites de ChromaDB) :\n"
+    #    f"{contexte_actualites if contexte_actualites else 'Aucune actualité trouvée pour cette date.'}\n"
+    #    "--------------------------\n"
+    #    "### DONNÉES DE RÉFÉRENCE (KIWIX) :\n"
+    #    f"{savoir_physique if savoir_physique else 'Aucune donnée encyclopédique trouvée.'}\n"
+    #    "--------------------------\n"
+    #    "### SOUVENIRS PERSONNELS (CHROMA) :\n"
+    #    f"{souvenirs_perso if souvenirs_perso else 'Aucun souvenir récent trouvé.'}\n"
+    #    "--------------------------\n\n"
+    #    "### RÈGLES D'OR DE NATACHA :\n"
+    #    f"{role_instruction}\n"
+    #    "1. TU DOIS TUTOYER THIERRY. Utilise 'tu' et 'toi', jamais 'vous'.\n"
+    #    "2. Ne dis JAMAIS qu'une date est fictive. Si l'info est dans 'ACTUALITÉS', elle est réelle.\n"
+    #    "3. Parle de façon décontractée, comme une collègue électronicienne.\n"
+    #    f"4. {consigne_longueur}\n"
+    #    f"5. TA RÉPONSE COMMENCE PAR : {intro}\n"
+    #    "RÉPONSE DE NATACHA :"
+    #)
 
     #prompt = (
     #    f"SYSTEME : Tu es Natacha, assistante IA. Date : {h_str}.\n\n"
@@ -417,5 +472,5 @@ except Exception as e:
     exit(1)
 
 threading.Thread(target=worker_natacha, daemon=True).start()
-print(f"🚀 Natacha v33.12ae en ligne. (DB: {CHROMA_DIR})")
+print(f"🚀 Natacha v33.12ag en ligne. (DB: {CHROMA_DIR})")
 client.loop_forever()
