@@ -8,6 +8,49 @@ import sys
 import os
 from dotenv import load_dotenv
 import re
+import threading
+import shutil # Pour vérifier proprement la présence des commandes
+import time
+
+def forcer_audio_systeme():
+    """ 
+    Failsafe : Tente de démueter le son via PulseAudio (Desktop) 
+    ou via AMIXER (Server pur).
+    """
+    try:
+        time.sleep(2)
+        
+        # --- CAS 1 : Système avec PulseAudio (Ubuntu Desktop) ---
+        if shutil.which("pactl"):
+            os.system("pactl set-sink-mute @DEFAULT_SINK@ false > /dev/null 2>&1")
+            os.system("pactl set-sink-volume @DEFAULT_SINK@ 60% > /dev/null 2>&1")
+            print("🔊 Failsafe : PulseAudio démueté (55%).")
+
+        # --- CAS 2 : Système Server pur (ALSA direct) ---
+        if shutil.which("amixer"):
+            # On tente de démueter le Master général
+            os.system("amixer sset Master unmute > /dev/null 2>&1")
+            os.system("amixer sset Master 55% > /dev/null 2>&1")
+            
+            # Cas spécifique HDMI (ton cas sur le Ryzen)
+            # On force l'activation des switchs numériques IEC958
+            os.system("amixer -c 0 sset IEC958 on > /dev/null 2>&1")
+            os.system("amixer -c 0 sset IEC958,1 on > /dev/null 2>&1")
+            print("🔊 Failsafe : ALSA/HDMI démueté via amixer.")
+
+    except Exception as e:
+        # On reste discret en cas d'erreur pour ne pas bloquer le démarrage
+        pass
+
+# Lancement du gardien en arrière-plan
+thread_son = threading.Thread(target=forcer_audio_systeme, daemon=True)
+thread_son.start()
+
+# --- RÉGLAGE DU VOLUME ---
+# 1.0 = 100% (volume normal)
+# 0.5 = 50%
+# 0.2 = 20% (ce que je te conseille pour commencer)
+NIVEAU_SONORE = 0.5
 
 # --- CHARGEMENT DE LA CONFIGURATION ---
 load_dotenv()
@@ -29,7 +72,7 @@ device_env = os.getenv("SPEAKER_DEVICE_NAME", "")
 match = re.search(r'\((hw:\d+,\d+)\)', device_env)
 
 if match:
-    alsa_device = match.group(1) # Récupère 'hw:2,0'
+    alsa_device = match.group(1) # Récupère 'hw: -,-
     SINK = f"alsasink device={alsa_device}"
     print(f"✅ Sortie forcée sur le matériel : {alsa_device}")
 else:
@@ -39,14 +82,27 @@ else:
 # Pipeline intelligent : 
 # 1. Il reçoit en 22050 Hz (le flux réseau)
 # 2. Il convertit et ré-échantillonne (audioresample) vers la sortie PulseAudio
+#pipeline = (
+#    f'gst-launch-1.0 udpsrc port={PORT_UDP} buffer-size=524288 ! '
+#    f'"audio/x-raw,rate={STREAM_RATE},channels={CHANNELS},format={FORMAT},layout=interleaved" ! '
+#    f'queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 ' 
+#    f'min-threshold-time=200000000 ! ' 
+#    f'rawaudioparse use-sink-caps=true ! '
+#    f'audioconvert ! '
+#    f'audioresample ! ' # <-- C'est lui qui fait le pont entre 22050 et 48000 Hz
+#    f'{SINK} buffer-time=200000 latency-time=10000'
+#)
+
 pipeline = (
     f'gst-launch-1.0 udpsrc port={PORT_UDP} buffer-size=524288 ! '
     f'"audio/x-raw,rate={STREAM_RATE},channels={CHANNELS},format={FORMAT},layout=interleaved" ! '
+    # Ta file d'attente anti-jitter (ne surtout pas l'enlever !)
     f'queue max-size-buffers=0 max-size-time=0 max-size-bytes=0 ' 
     f'min-threshold-time=200000000 ! ' 
     f'rawaudioparse use-sink-caps=true ! '
     f'audioconvert ! '
-    f'audioresample ! ' # <-- C'est lui qui fait le pont entre 22050 et 48000 Hz
+    f'audioresample ! ' # <--- Le pont 22k vers 48k est bien là
+    f'volume volume={NIVEAU_SONORE} ! ' # Le réglage de puissance
     f'{SINK} buffer-time=200000 latency-time=10000'
 )
 
