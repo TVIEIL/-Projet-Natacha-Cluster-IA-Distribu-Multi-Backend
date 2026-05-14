@@ -24,8 +24,9 @@ venv/
 Thumbs.db
 
 --- Données IA ---
-
-On ne monte pas les modèles lourds (plusieurs Go) sur GitHub
+**/memoire_chroma/
+**/*.log
+**/.env
 
 *.gguf
 *.bin
