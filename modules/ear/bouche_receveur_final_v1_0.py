@@ -23,14 +23,14 @@ def forcer_audio_systeme():
         # --- CAS 1 : Système avec PulseAudio (Ubuntu Desktop) ---
         if shutil.which("pactl"):
             os.system("pactl set-sink-mute @DEFAULT_SINK@ false > /dev/null 2>&1")
-            os.system("pactl set-sink-volume @DEFAULT_SINK@ 60% > /dev/null 2>&1")
-            print("🔊 Failsafe : PulseAudio démueté (55%).")
+            os.system("pactl set-sink-volume @DEFAULT_SINK@ 50% > /dev/null 2>&1")
+            print("🔊 Failsafe : PulseAudio démueté (50%).")
 
         # --- CAS 2 : Système Server pur (ALSA direct) ---
         if shutil.which("amixer"):
             # On tente de démueter le Master général
             os.system("amixer sset Master unmute > /dev/null 2>&1")
-            os.system("amixer sset Master 55% > /dev/null 2>&1")
+            os.system("amixer sset Master 50% > /dev/null 2>&1")
             
             # Cas spécifique HDMI (ton cas sur le Ryzen)
             # On force l'activation des switchs numériques IEC958
