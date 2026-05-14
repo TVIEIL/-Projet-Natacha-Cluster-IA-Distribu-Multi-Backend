@@ -16,9 +16,15 @@ import paho.mqtt.client as mqtt
 from paho.mqtt.enums import CallbackAPIVersion
 from faster_whisper import WhisperModel
 from dotenv import load_dotenv  # <-- AJOUT : Pour lire le .env
+from pathlib import Path
 
-# --- CHARGEMENT DE LA CONFIGURATION DYNAMIQUE ---
-load_dotenv()  # Charge le fichier .env généré par setup_audio.py
+# On trouve le chemin du script lui-même
+base_path = Path(__file__).resolve().parent
+env_path = base_path / ".env"
+
+# On charge le .env avec le chemin absolu
+load_dotenv(dotenv_path=env_path)
+
 
 # --- IMPORT DES SECRETS ---
 try:
@@ -149,12 +155,12 @@ try:
                                 time.sleep(8)
                                 execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl restart mosquitto.service")
                                 execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl restart natacha-brain.service")
-                                execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl restart cerveau_natacha.service")
+                                execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl restart cerveau_de_natacha.service")
                                 execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl restart kiwix.service")
-                                execute_remote_command(BOUCHE_IP, CREDS["bouche"]["user"], CREDS["bouche"]["pass"], "systemctl restart bouche_natacha.service") 
-                                cmd_oreille_gst = "killall -9 gst-launch-1.0 ; systemctl restart gstream_natacha.service"
+                                execute_remote_command(BOUCHE_IP, CREDS["bouche"]["user"], CREDS["bouche"]["pass"], "systemctl restart bouche_de_natacha.service") 
+                                cmd_oreille_gst = "killall -9 gst-launch-1.0 ; systemctl restart gstream-natacha.service"
                                 execute_remote_command(OREILLE_IP, CREDS["oreille"]["user"], CREDS["oreille"]["pass"], cmd_oreille_gst)
-                                execute_remote_command(OREILLE_IP, CREDS["oreille"]["user"], CREDS["oreille"]["pass"], "systemctl restart oreille_natacha.service.service")                                
+                                execute_remote_command(OREILLE_IP, CREDS["oreille"]["user"], CREDS["oreille"]["pass"], "systemctl restart Oreille-Natacha.service")                                
                                                 
                             # CAS 2 : ARRÊT TOTAL
                             elif any(act in text for act in ACT_ARRET) and any(suj in text for suj in SUJ_ARRET):
