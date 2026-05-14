@@ -10,8 +10,8 @@ WorkingDirectory=/home/vieil/Natacha-Project/modules/ear
 Environment="XDG_RUNTIME_DIR=/run/user/1000"
 Environment=PYTHONUNBUFFERED=1
 
-# Correction : Chemin complet + bon script (oreille_v1_30.py)
-ExecStart=/home/vieil/miniconda3/envs/natacha_oreille/bin/python3 /home/vieil/Natacha-Project/modules/ear/oreille_v1_30.py
+# Correction du nom de l'env et du nom du script
+ExecStart=/home/vieil/miniconda3/envs/oreille_natacha/bin/python3 /home/vieil/Natacha-Project/modules/ear/oreille_v1_30.py
 
 Restart=always
 RestartSec=5
