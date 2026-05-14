@@ -19,7 +19,7 @@ PORT_UDP = 5000
 CHANNELS = 1
 FORMAT = "S16LE"
 
-# --- CONFIGURATION DE SORTIE (Ton matériel Ryzen) ---
+# --- CONFIGURATION DE SORTIE (Mon matériel Ryzen) ---
 # On récupère le RATE matériel de ton .env (48000 Hz) pour informer GStreamer
 HW_RATE = int(os.getenv("AUDIO_SAMPLE_RATE", 48000))
 device_env = os.getenv("SPEAKER_DEVICE_NAME", "")
