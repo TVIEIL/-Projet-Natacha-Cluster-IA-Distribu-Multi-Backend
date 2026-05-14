@@ -23,15 +23,17 @@ import wave
 import contextlib
 import sys
 from dotenv import load_dotenv
+from pathlib import Path
+
 
 # ==============================================================================
 # GESTION DYNAMIQUE DE LA CONFIGURATION (.env)
 # ==============================================================================
-def charger_ou_creer_env():
-    env_path = ".env"
-    if not os.path.exists(env_path):
-        print("📁 Création du fichier .env pour la Bouche...")
-        with open(env_path, "w") as f:
+
+def charger_ou_creer_env(chemin_complet):
+    if not os.path.exists(chemin_complet):
+        print(f"📁 Création du fichier .env à : {chemin_complet}")
+        with open(chemin_complet, "w") as f:
             f.write("# CONFIGURATION NATACHA - BOUCHE\n")
             f.write("MQTT_BROKER=192.168.1.100\n")
             f.write("OREILLE_IP=192.168.1.90\n")
@@ -42,10 +44,16 @@ def charger_ou_creer_env():
             f.write("WAV_PATH=/tmp/natacha_temp.wav\n")
         print("✅ Fichier .env créé. Vérifiez les chemins à l'intérieur.")
     
-    load_dotenv(env_path)
 
-# Chargement de la configuration avant tout le reste
-charger_ou_creer_env()
+# 1. On trouve d'abord le chemin (On trace le circuit)
+base_path = Path(__file__).resolve().parent
+env_path = base_path / ".env"
+
+# 2. On vérifie/crée le fichier (On pose le composant)
+charger_ou_creer_env(env_path)
+    
+# 3. On charge les données dans le script (On met sous tension)
+load_dotenv(dotenv_path=env_path)
 
 # --- CONFIGURATION (Extraite du .env) ---
 MQTT_BROKER = os.getenv("MQTT_BROKER", "192.168.1.100")
