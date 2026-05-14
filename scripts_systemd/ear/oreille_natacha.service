@@ -1,3 +1,5 @@
+[Unit]
+Description= Oreille de Natacha 
 After=network.target pulseaudio.service
 
 [Service]
