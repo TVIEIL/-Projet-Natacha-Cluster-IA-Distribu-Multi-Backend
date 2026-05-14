@@ -5,15 +5,13 @@ After=network.target pulseaudio.service
 [Service]
 User=vieil
 Group=vieil
-
-# Vérifie bien que c'est ce dossier qui contient tes fichiers .env et .py
+# Alignement sur ta nouvelle structure
 WorkingDirectory=/home/vieil/Natacha-Project/modules/ear
 
 Environment="XDG_RUNTIME_DIR=/run/user/1000"
 Environment=PYTHONUNBUFFERED=1
 
-# CORRECTION : On lance bien le script de l'oreille (v1.30)
-# Et on utilise le chemin complet pour éviter l'erreur 203/EXEC
+# Exécution du script de l'oreille avec le bon Python
 ExecStart=/home/vieil/miniconda3/envs/natacha_oreille/bin/python3 /home/vieil/Natacha-Project/modules/ear/oreille_v1_30.py
 
 Restart=always
