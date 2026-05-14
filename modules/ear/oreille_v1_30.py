@@ -15,8 +15,24 @@ import os, time, subprocess, paramiko, pyaudio, socket, numpy as np
 import paho.mqtt.client as mqtt
 from paho.mqtt.enums import CallbackAPIVersion
 from faster_whisper import WhisperModel
-from dotenv import load_dotenv  # <-- AJOUT : Pour lire le .env
+from dotenv import load_dotenv  
 from pathlib import Path
+import sys
+from contextlib import contextmanager
+
+@contextmanager
+def ignore_stderr():
+    """Redirige les erreurs système vers /dev/null pour un terminal propre."""
+    devnull = os.open(os.devnull, os.O_WRONLY)
+    old_stderr = os.dup(sys.stderr.fileno())
+    os.dup2(devnull, sys.stderr.fileno())
+    try:
+        yield
+    finally:
+        os.dup2(old_stderr, sys.stderr.fileno())
+        os.close(devnull)
+        os.close(old_stderr)
+
 
 # On trouve le chemin du script lui-même
 base_path = Path(__file__).resolve().parent
@@ -82,21 +98,35 @@ def check_health(ip, port):
 print(f"📥 Chargement de Whisper Medium (Rate cible: {MIC_RATE} Hz)...")
 model = WhisperModel("medium", device="cpu", compute_type="int8", cpu_threads=12, num_workers=1)
 
-p = pyaudio.PyAudio()
+# --- RECHERCHE DU MICRO DYNAMIQUE ET ROBUSTE ---
+with ignore_stderr():
+    p = pyaudio.PyAudio()
+
 input_idx = None
 
-# Recherche de l'index par nom (Flexible : cherche si le nom du .env est contenu dans le nom ALSA)
+# On nettoie TARGET_MIC_NAME pour ne garder que le nom stable (ex: "USB ENC Audio Device")
+# On retire tout ce qui est entre parenthèses ou après les ":" au cas où c'est resté dans le .env
+clean_search_name = TARGET_MIC_NAME.split('(')[0].split(':')[0].strip().upper()
+
+print(f"🔍 Recherche du micro : '{clean_search_name}'...")
+
 for i in range(p.get_device_count()):
     dev_info = p.get_device_info_by_index(i)
-    if TARGET_MIC_NAME.upper() in dev_info['name'].upper():
+    dev_name = dev_info['name']
+    
+    # On compare sans tenir compte de la casse et en ignorant l'adresse matérielle (hw:X,Y)
+    if clean_search_name in dev_name.upper():
         input_idx = i
+        print(f"✅ Micro trouvé : {dev_name} à l'index {i}")
         break
 
 if input_idx is None:
-    print(f"❌ Erreur : Impossible de trouver le périphérique '{TARGET_MIC_NAME}'")
+    print(f"❌ Erreur : Impossible de trouver un périphérique contenant '{clean_search_name}'")
+    print("📍 Liste des périphériques détectés :")
+    for i in range(p.get_device_count()):
+        print(f"  [{i}] {p.get_device_info_by_index(i)['name']}")
     p.terminate()
     exit(1)
-
 connecter_mqtt()
 stream = p.open(format=pyaudio.paInt16, channels=CHANNELS, rate=MIC_RATE,
                 input=True, input_device_index=input_idx, frames_per_buffer=CHUNK)
@@ -160,7 +190,7 @@ try:
                                 execute_remote_command(BOUCHE_IP, CREDS["bouche"]["user"], CREDS["bouche"]["pass"], "systemctl restart bouche_de_natacha.service") 
                                 cmd_oreille_gst = "killall -9 gst-launch-1.0 ; systemctl restart gstream-natacha.service"
                                 execute_remote_command(OREILLE_IP, CREDS["oreille"]["user"], CREDS["oreille"]["pass"], cmd_oreille_gst)
-                                execute_remote_command(OREILLE_IP, CREDS["oreille"]["user"], CREDS["oreille"]["pass"], "systemctl restart Oreille-Natacha.service")                                
+                                execute_remote_command(OREILLE_IP, CREDS["oreille"]["user"], CREDS["oreille"]["pass"], "systemctl restart oreille_natacha.service")                                
                                                 
                             # CAS 2 : ARRÊT TOTAL
                             elif any(act in text for act in ACT_ARRET) and any(suj in text for suj in SUJ_ARRET):
