@@ -13,7 +13,6 @@ from datetime import datetime
 from chromadb.utils import embedding_functions
 import paho.mqtt.client as mqtt
 from paho.mqtt.enums import CallbackAPIVersion
-#from bs4 import BeautifulSoup
 import socket
 import queue
 from concurrent.futures import ThreadPoolExecutor
@@ -21,6 +20,9 @@ import random
 from dotenv import load_dotenv, set_key
 import urllib.parse  # Utile pour nettoyer la question
 import html 
+from pathlib import Path
+
+
 
 # 1. On définit ton identifiant "Secret" (tu peux le mettre dans ton .env)
 INDICATIF_MAITRE = "F4HRB"
@@ -36,11 +38,10 @@ def verifier_identite(texte_a_verifier):
 # ==============================================================================
 # 1. GESTION DYNAMIQUE DE LA CONFIGURATION (.env)
 # ==============================================================================
-def charger_ou_creer_env():
-    env_path = ".env"
-    if not os.path.exists(env_path):
-        print("📁 Création du fichier .env avec les valeurs par défaut...")
-        with open(env_path, "w") as f:
+def charger_ou_creer_env(chemin_complet):
+    if not os.path.exists(chemin_complet):
+        print(f"📁 Création du fichier .env à : {chemin_complet}")
+        with open(chemin_complet, "w") as f:
             f.write("# CONFIGURATION NATACHA - CERVEAU\n")
             f.write("BROKER_IP=127.0.0.1\n")
             f.write("LLAMA_SERVER_URL=http://127.0.0.1:8000/v1/chat/completions\n")
@@ -48,10 +49,16 @@ def charger_ou_creer_env():
             f.write("CHROMA_PATH=./memoire_chroma\n")
         print("✅ Fichier .env créé. Adaptez les IPs si nécessaire.")
     
-    load_dotenv(env_path)
 
-# Chargement impératif avant l'initialisation des variables globales
-charger_ou_creer_env()
+# 1. On trouve d'abord le chemin (On trace le circuit)
+base_path = Path(__file__).resolve().parent
+env_path = base_path / ".env"
+
+# 2. On vérifie/crée le fichier (On pose le composant)
+charger_ou_creer_env(env_path)
+    
+# 3. On charge les données dans le script (On met sous tension)
+load_dotenv(dotenv_path=env_path)
 
 # --- CONFIGURATION (Pilotée par le .env) ---
 BROKER = os.getenv("BROKER_IP", "127.0.0.1")
@@ -410,5 +417,5 @@ except Exception as e:
     exit(1)
 
 threading.Thread(target=worker_natacha, daemon=True).start()
-print(f"🚀 Natacha v33.12ab en ligne. (DB: {CHROMA_DIR})")
+print(f"🚀 Natacha v33.12ae en ligne. (DB: {CHROMA_DIR})")
 client.loop_forever()
