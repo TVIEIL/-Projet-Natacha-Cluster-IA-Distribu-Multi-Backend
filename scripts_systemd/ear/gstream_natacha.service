@@ -4,14 +4,11 @@ After=network.target
 
 [Service]
 Type=simple
-User=vieil
-Group=vieil
+# Définit automatiquement le dossier de travail dans votre Home
 WorkingDirectory=%h/Natacha-Project/modules/ear
 
-Environment=XDG_RUNTIME_DIR=/run/user/1000
-
-# On utilise le même environnement Conda pour garantir la présence des librairies
-ExecStart=%h/miniconda3/envs/oreille_natacha/bin/python3 /home/vieil/Natacha-Project/modules/ear/bouche_receveur_final_v1_0.py
+# Utilise l'environnement Conda oreille_natacha pour lancer le récepteur
+ExecStart=%h/miniconda3/envs/oreille_natacha/bin/python3 %h/Natacha-Project/modules/ear/bouche_receveur_final_v1_0.py
 
 Restart=always
 RestartSec=5
