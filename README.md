@@ -643,8 +643,8 @@ tar -xf piper_arm64.tar.gz
 Bash
 ```
 # Téléchargement du modèle
-wget https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx -P ~/bouche_natacha/models/
-wget https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx.json -P ~/bouche_natacha/models/
+wget https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx -P ~/modeles_natacha/
+wget https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx.json -P ~/modeles_natacha/
 ```
 
 🐍 Configuration de l'environnement Python (tts_env)
@@ -721,7 +721,7 @@ sudo systemctl status bouche_natacha.service
 
 Natacha a désormais une structure de déploiement digne des meilleurs serveurs de production.
 
-Ton cluster est paré pour durer dans le temps ! 🚀
+Le cluster est paré pour durer dans le temps ! 🚀
 
 &nbsp;
 
