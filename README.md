@@ -173,14 +173,17 @@ Avec Conda, le chemin vers l'exécutable Python est différent. Éditez votre fi
 
 
 
-## 6. Automatisation Robuste (Systemd)
+## 6. 🛠️ Installation manuelle du service (Mode Utilisateur)
+
+Si vous n'utilisez pas le script automatique, voici les étapes pour installer les services manuellement pour votre utilisateur :
 
 Pour que le nœud démarre tout seul avec la machine tout en restant consultable, nous utilisons un service.
 
-Créez le fichier de service :
+Créez le dossier de destination et ouvrez nano :
 
 ```
-sudo nano /etc/systemd/system/oreille_natacha.service
+mkdir -p ~/.config/systemd/user/
+nano ~/.config/systemd/user/oreille_natacha.service
 ```
 
 Collez la configuration suivante (adaptez vieil par votre nom d'utilisateur) :
@@ -189,16 +192,15 @@ Ini, TOML
 ```
 [Unit]
 Description=Oreille de Natacha (Whisper) - User Mode
-# Indispensable pour s'assurer que l'environnement utilisateur est prêt
 After=default.target
 
 [Service]
 Type=simple
-# Remplacez 'vieil' par votre nom d'utilisateur si nécessaire dans les chemins
+# %h est remplacé automatiquement par votre répertoire Home
 WorkingDirectory=%h/Natacha-Project/modules/ear
 Environment=PYTHONUNBUFFERED=1
 
-# Délai pour laisser le serveur audio (PulseAudio/PipeWire) s'initialiser
+# Délai pour laisser le serveur audio s'initialiser
 ExecStartPre=/bin/sleep 10
 ExecStart=%h/miniconda3/envs/oreille_natacha/bin/python3 %h/Natacha-Project/modules/ear/oreille_v1_30.py
 Restart=always
@@ -212,10 +214,10 @@ CTRL + o puis 'entrée' pour sauver le fichier, puis CTRL + x pour sortir de nan
 Activez et lancez le service :
 
 ```
+# Autorise les services utilisateur à tourner en arrière-plan
 sudo loginctl enable-linger $USER
-mkdir -p ~/.config/systemd/user/
-cp ~/Natacha-Project/modules/ear/systemd/oreille_natacha.service ~/.config/systemd/user/
 
+# Recharge, active et lance le service
 systemctl --user daemon-reload
 systemctl --user enable oreille_natacha.service
 systemctl --user start oreille_natacha.service
@@ -226,7 +228,7 @@ systemctl --user start oreille_natacha.service
 Grâce à journalctl, le nœud tourne en tâche de fond mais reste accessible à tout moment :
 
 ```
-journalctl -u oreille_natacha -f -o cat
+journalctl --user -u oreille_natacha.service -f -o cat
 ```
 
 ![oreille_natacha_v_1_30.py](assets/oreille_natacha_v_1_30.png)
