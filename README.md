@@ -458,10 +458,10 @@ Il s'occupe du démarrage automatique de llama.cpp au démarrage du cerveau.
 Commandes de gestion :
 
 ```
-sudo systemctl daemon-reload
-sudo systemctl enable natacha-brain.service
-sudo systemctl start natacha-brain.service
-sudo systemctl status natacha-brain.service
+systemctl --user daemon-reload
+systemctl --user enable natacha-brain.service
+systemctl --user start natacha-brain.service
+systemctl --user status natacha-brain.service
 ```
 </br>
 
