@@ -566,39 +566,37 @@ Au premier lancement, le script crée automatiquement le dossier ./memoire_chrom
 
 4. Création du fichier service  cerveau_natacha.service
 ```
-sudo nano /etc/systemd/system/cerveau_natacha.service
+mkdir -p ~/.config/systemd/user/
+nano ~/.config/systemd/user/cerveau_natacha.service
 ```
 5. Ajoute le code suivant (adapte le nom de l'utilisateur) :
 ```
 [Unit]
 Description=Cerveau de Natacha - Pont Intelligence (MQTT/ChromaDB/Kiwix)
-# On attend que le réseau, le broker MQTT ET le serveur llama.cpp soient prêts
-After=network-online.target mosquitto.service llama-brain.service
-Requires=mosquitto.service llama-brain.service
+# On attend que le réseau et le broker MQTT soient prêts
+After=network-online.target
 
 [Service]
 Type=simple
-User=vieil
-Group=vieil
+WorkingDirectory=%h/Natacha-Project/modules/brain
 
-WorkingDirectory=/home/vieil/Natacha-Project/modules/brain
+# Lancement avec l'environnement Conda dédié
+ExecStart=%h/miniconda3/envs/cerveau_natacha/bin/python3 brain_v33_12.py
 
-ExecStart=/home/vieil/miniconda3/envs/cerveau_natacha/bin/python3 brain_v33_12.py
-
-# Pour voir les logs en temps réel avec journalctl -u cerveau_natacha -f
+# Pour voir les logs en temps réel : journalctl --user -u cerveau_natacha -f
 Environment=PYTHONUNBUFFERED=1
 
 Restart=always
 RestartSec=10
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 ```
 6. Activation du service
 ```
-sudo systemctl daemon-reload
-sudo systemctl enable cerveau_natacha.service
-sudo systemctl start cerveau_natacha.service
+systemctl --user daemon-reload
+systemctl --user enable cerveau_natacha.service
+systemctl --user start cerveau_natacha.service
 ```
 
 
