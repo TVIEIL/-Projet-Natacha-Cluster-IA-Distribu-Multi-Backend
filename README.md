@@ -240,9 +240,11 @@ Quitter l'affichage sans couper l'IA : Appuyez sur Ctrl+C.
 
 ## 8. Gstream  écoute de la synthèse vocale au casque 
 
-On utilise le micro casque USB sur la carte ou ordinateur RYZEN 5 "oreille".
-La carte reçoit un flux audio provenant de l'orangepi6plus la "Bouche".
-Le casque USB va restituer la synthèse vocale provenant de la "Bouche"
+On utilise un micro-casque USB branché sur le nœud "Oreille".
+
+    La carte reçoit un flux audio provenant de l'Orange Pi (la "Bouche").
+
+    Le casque restitue la synthèse vocale de Natacha.
 
 Installer les outils gstreamer
 ```
@@ -252,7 +254,8 @@ sudo apt install gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugi
 
 Création du service gstream_natacha.service
 ```
-sudo nano /etc/systemd/system/gstream_natacha.service
+mkdir -p ~/.config/systemd/user/
+nano ~/.config/systemd/user/gstream_natacha.service
 ```
 
 Ajouter le code suivant (adaptez vieil par votre nom d'utilisateur et groupe)  :
@@ -263,14 +266,11 @@ After=network.target
 
 [Service]
 Type=simple
-User=vieil
-Group=vieil
+# Définit automatiquement le dossier de travail dans votre Home
 WorkingDirectory=%h/Natacha-Project/modules/ear
 
-Environment=XDG_RUNTIME_DIR=/run/user/1000
-
-# On utilise le même environnement Conda pour garantir la présence des librairies
-ExecStart=%h/miniconda3/envs/oreille_natacha/bin/python3 /home/vieil/Natacha-Project/modules/ear/bouche_receveur_final_v1_0.py
+# Utilise l'environnement Conda oreille_natacha pour lancer le récepteur
+ExecStart=%h/miniconda3/envs/oreille_natacha/bin/python3 %h/Natacha-Project/modules/ear/bouche_receveur_final_v1_0.py
 
 Restart=always
 RestartSec=5
@@ -284,15 +284,19 @@ CTRL + o puis 'entrée' pour sauver le fichier, puis CTRL + x pour sortir de nan
 Activez et lancez le service :
 
 ```
-sudo systemctl daemon-reload
-sudo systemctl enable gstream_natacha.service
-sudo systemctl start gstream_natacha.service
+systemctl --user daemon-reload
+systemctl --user enable gstream_natacha.service
+systemctl --user start gstream_natacha.service
 ```
 
 On peut visualiser le status du service en tapant :
 
 ```
 systemctl status gstream-natacha
+```
+Ou bien
+```
+journaltcl --user -u gstream_natacha -f -o cat
 ```
 
 
