@@ -79,7 +79,7 @@ Python stable pour l'IA (Python 3.10 ou 3.11 est recommandé) :
 
 
 ```
-conda create -n natacha_oreille python=3.11 -y
+conda create -n oreille_natacha python=3.11 -y
 ```
 
 
@@ -89,7 +89,7 @@ conda create -n natacha_oreille python=3.11 -y
 Activez ce nouvel environnement. Votre terminal affichera (natacha_oreille) au début de la ligne :
 
 ```
-conda activate natacha_oreille
+conda activate oreille_natacha
 ```
 
 Placez-vous dans le dossier du module :
@@ -101,7 +101,7 @@ cd ~/Natacha-Project/modules/ear
 L'astuce Conda pour l'audio : Plutôt que d'installer les dépendances système complexes via apt, laissez Conda gérer la compilation de PyAudio et de portaudio proprement :
 
 ```
-conda install -c conda-forge pyaudio screen -y
+conda install -c conda-forge pyaudio -y
 ```
 
 Puis, installez le reste de vos librairies (MQTT, Faster-Whisper, etc.) :
@@ -148,13 +148,13 @@ python3 oreille_v1_30.py
 ```
 
 Pour le lancement automatique au démarrage :
-Avec Conda, le chemin vers l'exécutable Python est différent. Éditez votre fichier de service (ex: sudo nano /etc/systemd/system/natacha_oreille.service) :
+Avec Conda, le chemin vers l'exécutable Python est différent. Éditez votre fichier de service (ex: sudo nano /etc/systemd/system/oreille_natacha.service) :
 
 
 
-## 6. Automatisation Robuste (Systemd + Screen)
+## 6. Automatisation Robuste (Systemd)
 
-Pour que le nœud démarre tout seul avec la machine tout en restant consultable, nous utilisons un service système couplé à screen.
+Pour que le nœud démarre tout seul avec la machine tout en restant consultable, nous utilisons un service.
 
 Créez le fichier de service :
 
@@ -211,7 +211,7 @@ journalctl -u oreille_natacha -f -o cat
 ![oreille_natacha_v_1_30.py](assets/oreille_natacha_v_1_30.png)
 
 
-Quitter l'affichage sans couper l'IA : Appuyez sur Ctrl+A puis D (Détacher).
+Quitter l'affichage sans couper l'IA : Appuyez sur Ctrl+C.
 
 
 
