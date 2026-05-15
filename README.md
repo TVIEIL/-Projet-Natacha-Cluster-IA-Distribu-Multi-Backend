@@ -405,7 +405,7 @@ wget https://huggingface.co/TheBloke/OpenHermes-2.5-Mistral-7B-GGUF/resolve/main
 ```
 
 [!NOTE]
-Le fichier de service natacha-brain.service pointe directement vers ce chemin (/modeles_natacha/).
+Le fichier de service natacha-brain.service pointe directement vers ce chemin (~/modeles_natacha/).
 --- adaptez vieil par votre nom d'utilisateur ---
 
 Création du fichier de service natacha-brain.service
