@@ -92,6 +92,12 @@ Activez ce nouvel environnement. Votre terminal affichera (natacha_oreille) au d
 conda activate oreille_natacha
 ```
 
+Cloner le dépôt :
+
+```
+git clone https://github.com/TVIEIL/-Projet-Natacha-Cluster-IA-Distribu-Multi-Backend.git Natacha-Project
+```
+
 Placez-vous dans le dossier du module :
 
 ```
