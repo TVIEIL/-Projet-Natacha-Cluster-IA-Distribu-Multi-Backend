@@ -314,6 +314,7 @@ Tapez la commande suivante :
 
 ```
 sudo loginctl enable-linger votre_nom_utilisateur
+sudo usermod -aG audio votre_nom_utilisateur
 ```
 
 &nbsp;
