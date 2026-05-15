@@ -13,25 +13,20 @@
 # limitations under the License.
 
 [Unit]
-Description=Oreille de Natacha (Whisper)
-After=network.target pulseaudio.service
-...
-
-[Unit]
 Description=Cerveau de Natacha - Serveur Llama.cpp
 After=network.target
 
 [Service]
-User=vieil
-Group=vieil
+# On supprime User et Group car c'est un service --user
 LimitMEMLOCK=infinity
-WorkingDirectory=/home/vieil/llama.cpp
+WorkingDirectory=%h/llama.cpp
 
-ExecStart=/home/vieil/llama.cpp/build/bin/llama-server \
-    -m /home/vieil/modeles_natacha/openhermes-2.5-mistral-7b.Q4_K_M.gguf \
+# Utilisation de %h pour le chemin du modèle et de l'exécutable
+ExecStart=%h/llama.cpp/build/bin/llama-server \
+    -m %h/modeles_natacha/openhermes-2.5-mistral-7b.Q4_K_M.gguf \
     --ctx-size 2048 \
     --threads 12 \
-    --flash-attn on  \
+    --flash-attn on \
     --mlock \
     --host 127.0.0.1 \
     --port 8000
@@ -39,10 +34,10 @@ ExecStart=/home/vieil/llama.cpp/build/bin/llama-server \
 Restart=always
 RestartSec=10
 
-# On laisse un peu plus de marge pour éviter que le service ne soit tué
+# Gestion de la mémoire
 MemoryMax=16G
-# On enlève MemoryHigh ou on le met à 12G pour ne pas brider le mlock
 MemoryHigh=15G
 
 [Install]
-WantedBy=multi-user.target
+# Indispensable pour le mode --user
+WantedBy=default.target
