@@ -40,7 +40,22 @@ la stabilité des flux audio et la gestion correcte des environnements Conda.
     OS : Ubuntu 24.04 LTS (recommandé sur Ryzen et Intel).
 
     Architecture : x86_64 ou ARM64 (Orange Pi).
-    
+
+🚀 Installation Rapide (Recommandé)
+
+Si votre système est prêt, vous pouvez installer automatiquement le module de votre choix (Oreille, Cerveau ou Bouche) grâce au script d'installation unifié. Ce script s'occupe de créer l'environnement Conda, d'installer les dépendances APT/Pip et de configurer le service systemd.
+
+```
+# 1. Cloner le dépôt dans le dossier Natacha-Project
+git clone https://github.com/TVIEIL/-Projet-Natacha-Cluster-IA-Distribu-Multi-Backend.git Natacha-Project
+
+# 2. Accéder au dossier
+cd ~/Natacha-Project
+
+# 3. Rendre le script exécutable et lancer l'installation
+chmod +x install.sh
+./install.sh
+```
 
 ## 0. Prérequis : Installation de Miniconda3
 
