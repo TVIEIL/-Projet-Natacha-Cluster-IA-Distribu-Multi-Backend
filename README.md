@@ -258,7 +258,7 @@ mkdir -p ~/.config/systemd/user/
 nano ~/.config/systemd/user/gstream_natacha.service
 ```
 
-Ajouter le code suivant (adaptez vieil par votre nom d'utilisateur et groupe)  :
+Ajouter le code suivant  :
 ```
 [Unit]
 Description=GStreamer Receiver pour Natacha (Bouche)
@@ -296,7 +296,7 @@ systemctl --user status gstream_natacha
 ```
 Ou bien
 ```
-journaltcl --user -u gstream_natacha -f -o cat
+journalctl --user -u gstream_natacha -f -o cat
 ```
 
 
