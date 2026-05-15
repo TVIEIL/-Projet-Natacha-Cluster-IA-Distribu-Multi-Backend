@@ -26,16 +26,21 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# Vérification de sécurité sur le nom du dossier
-if [[ "$(basename "$PWD")" != "Natacha-Project" ]]; then
-    echo -e "${YELLOW}Le dossier actuel ne s'appelle pas 'Natacha-Project'.${NC}"
-    echo -e "Pour que les services fonctionnent, je vais le renommer..."
+# 1. On définit d'abord où on est
+CURRENT_DIR_NAME=$(basename "$PWD")
+
+# 2. Vérification de sécurité sur le nom du dossier
+if [[ "$CURRENT_DIR_NAME" != "Natacha-Project" ]]; then
+    echo -e "${YELLOW}Le dossier actuel ($CURRENT_DIR_NAME) ne s'appelle pas 'Natacha-Project'.${NC}"
+    echo -e "Renommage automatique..."
     cd ..
-    mv -- "$(basename "$PROJECT_ROOT")" "Natacha-Project"
+    mv -- "$CURRENT_DIR_NAME" "Natacha-Project"
     cd "Natacha-Project"
-    PROJECT_ROOT=$(pwd)
     echo -e "${GREEN}Dossier renommé avec succès.${NC}"
 fi
+
+# 3. Maintenant on définit le PROJECT_ROOT pour tout le reste du script
+PROJECT_ROOT=$(pwd)
 
 
 echo -e "${GREEN}-------------------------------------------------------"
@@ -101,32 +106,43 @@ echo "Vérification des conditions d'utilisation de Conda..."
 $HOME/miniconda3/bin/conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main || true
 $HOME/miniconda3/bin/conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r || true
 
-# --- 2. Installation par module ---
+# --- 3. Installation par module ---
+
+# On s'assure que systemctl peut parler au bus utilisateur
+export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+
 case $choice in
     1)
         echo -e "${GREEN}>>> Configuration OREILLE...${NC}"
         sudo apt update && sudo apt install -y ffmpeg gstreamer1.0-tools portaudio19-dev
         conda create -n oreille_natacha python=3.10 -y
         $HOME/miniconda3/envs/oreille_natacha/bin/pip install -r "$PROJECT_ROOT/modules/ear/requirements.txt"
+        
+        # Installation des DEUX services de l'oreille
         deploy_service "ear" "oreille_natacha"
-        ;;
+        deploy_service "ear" "gstream_natacha"
+        ;;  # <--- On ferme l'option 1 proprement
+
     2)
         echo -e "${GREEN}>>> Configuration CERVEAU...${NC}"
         sudo apt update && sudo apt install -y build-essential cmake
         conda create -n cerveau_natacha python=3.10 -y
         $HOME/miniconda3/envs/cerveau_natacha/bin/pip install -r "$PROJECT_ROOT/modules/brain/requirements.txt"
+        
         deploy_service "brain" "cerveau_natacha"
         echo -e "${YELLOW}Nota: N'oubliez pas de compiler llama.cpp manuellement.${NC}"
-        ;;
+        ;;  # <--- On ferme l'option 2
+
     3)
         echo -e "${GREEN}>>> Configuration BOUCHE...${NC}"
         sudo apt update && sudo apt install -y gstreamer1.0-tools alsa-utils
         conda create -n bouche_natacha python=3.10 -y
         $HOME/miniconda3/envs/bouche_natacha/bin/pip install -r "$PROJECT_ROOT/modules/mouth/requirements.txt"
+        
         deploy_service "mouth" "bouche_natacha"
-        ;;
+        ;;  # <--- On ferme l'option 3
 esac
 
-# --- 3. Finalisation ---
+# --- 4. Finalisation ---
 sudo loginctl enable-linger $USER
 echo -e "${GREEN}Installation terminée ! Pensez à vérifier vos fichiers dans /secrets.${NC}"
