@@ -227,6 +227,11 @@ On utilise le micro casque USB sur la carte ou ordinateur RYZEN 5 "oreille".
 La carte reçoit un flux audio provenant de l'orangepi6plus la "Bouche".
 Le casque USB va restituer la synthèse vocale provenant de la "Bouche"
 
+Installer les outils gstreamer
+```
+sudo apt update
+sudo apt install gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad
+```
 
 Création du service gstream_natacha.service
 ```
