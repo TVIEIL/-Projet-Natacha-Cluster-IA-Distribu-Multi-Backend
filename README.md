@@ -729,13 +729,13 @@ Bash
 
 ```
 # 1. On dit à systemd de relire les fichiers
-sudo systemctl daemon-reload
+systemctl --user daemon-reload
 
 # 2. On active le service nom au démarrage
-sudo systemctl enable bouche_natacha.service
+systemctl --user enable bouche_natacha.service
 
 # 3. On peut vérifier que tout tourne
-sudo systemctl status bouche_natacha.service
+systemctl --user status bouche_natacha.service
 ```
 
 Natacha a désormais une structure de déploiement digne des meilleurs serveurs de production.
