@@ -410,19 +410,34 @@ Le fichier de service natacha-brain.service pointe directement vers ce chemin (/
 
 Création du fichier de service natacha-brain.service
 ```
-sudo nano /etc/systemd/system/natacha-brain.service
+nano ~/.config/systemd/user/natacha-brain.service
 ```
 &nbsp;
 </br>
 Code du service :
 ```
+[Unit]
+Description=Cerveau de Natacha - Serveur Llama.cpp
+After=network.target
+
 [Service]
+# On ne met PAS de User=vieil ici pour le mode --user
 LimitMEMLOCK=infinity
 WorkingDirectory=%h/llama.cpp
 
 ExecStart=%h/llama.cpp/build/bin/llama-server \
     -m %h/modeles_natacha/openhermes-2.5-mistral-7b.Q4_K_M.gguf \
-...
+    --ctx-size 2048 \
+    --threads 12 \
+    --flash-attn on \
+    --mlock \
+    --host 127.0.0.1 \
+    --port 8000
+
+Restart=always
+RestartSec=10
+MemoryMax=16G
+MemoryHigh=15G
 
 [Install]
 WantedBy=default.target
