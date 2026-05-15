@@ -25,10 +25,10 @@ After=network.target mosquitto.service
 Type=simple
 User=vieil
 # Correction : On pointe vers le dossier où se trouve ton code
-WorkingDirectory=/home/vieil/Natacha-Project/modules/brain
+WorkingDirectory=%h/Natacha-Project/modules/brain
 
 # Correction : On utilise l'env Conda et le bon chemin vers le script
-ExecStart=/home/vieil/miniconda3/envs/cerveau_natacha/bin/python3 /home/vieil/Natacha-Project/modules/brain/veille_natacha.py
+ExecStart=%h/miniconda3/envs/cerveau_natacha/bin/python3 /home/vieil/Natacha-Project/modules/brain/veille_natacha.py
 
 Restart=always
 RestartSec=10
