@@ -160,11 +160,21 @@ def extraire_connaissance_wiki(question):
     recherche = " ".join(mots_filtres[-2:]) if mots_filtres else question
     
     try:
-        search_url = f"{KIWIX_URL}/search?content={NOM_LIVRE_KIWIX }&pattern={urllib.parse.quote(recherche)}"
+        search_url = f"{KIWIX_URL}/search?content={NOM_LIVRE_KIWIX}&pattern={urllib.parse.quote(recherche)}"
         res_search = requests.get(search_url, timeout=5)
-        liens = re.findall(r'href=["\'](/content/' + NOM_LIVRE_KIWIX  + r'/[^"\']+)["\']', res_search.text)
         
-        if not liens: return ""
+        # 1. On cherche d'abord avec le nom du livre précis
+        liens = re.findall(r'href=["\'](/content/' + NOM_LIVRE_KIWIX + r'/[^"\']+)["\']', res_search.text)
+
+        # 2. Si ça ne donne rien, on élargit (Correction de l'indentation ici)
+        if not liens:
+            liens = re.findall(r'href=["\'](/content/[^"\']+)["\']', res_search.text)
+
+        # 3. Sécurité : On vérifie si on a trouvé AU MOINS un lien avant de tenter le get
+        if not liens:
+            return ""
+
+        res_article = requests.get(f"{KIWIX_URL}{liens[0]}", timeout=5)
 
         res_article = requests.get(f"{KIWIX_URL}{liens[0]}", timeout=5)
         res_article.encoding = 'utf-8'
@@ -305,7 +315,7 @@ def traiter_question(question, client_mqtt):
     contexte_wiki = savoir_physique if savoir_physique else "Aucune donnée encyclopédique trouvée."
 
    # --- DÉTECTION DE L'INTENTION DE DÉTAIL ---
-    veut_detail = any(mot in q_low for mot in ["lit", "lis", "détaille", "explique", "wiki"])
+    veut_detail = any(mot in q_low for mot in ["lit", "lis", "détaille", "explique", "wiki", "recherche", "trouve"])
     consigne_longueur = "Développe largement ta réponse en citant les détails du livre." if veut_detail else "Sois concise et naturelle."
 
 
@@ -337,7 +347,8 @@ def traiter_question(question, client_mqtt):
         "2. ANALYSE GLOBALE : Ne dis jamais qu'une date est fictive. Synthétise TOUTES les actualités fournies ci-dessus pour faire un résumé complet.\n"
         "3. Parle de façon décontractée, comme une collègue électronicienne.\n"
         f"4. {consigne_longueur}\n"
-        f"5. TA RÉPONSE COMMENCE PAR : {intro}\n"
+        "--------------------------\n"
+        f"COMMENCE DIRECTEMENT TA RÉPONSE PAR : {intro}\n"
         "RÉPONSE DE NATACHA :"
     )
 
