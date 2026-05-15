@@ -1,13 +1,24 @@
 #!/bin/bash
+set -e  # Arrête le script en cas d'erreur
 
 # Couleurs
 GREEN='\033[0;32m'
+RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
 echo -e "${GREEN}-------------------------------------------------------"
 echo "   Installation du Projet Natacha - Cluster IA"
 echo -e "-------------------------------------------------------${NC}"
+
+# Vérification des droits sudo avant de commencer
+echo "Vérification des droits d'administration..."
+if sudo -v &> /dev/null; then
+    echo "Droits sudo validés."
+else
+    echo -e "${RED}Erreur : Vous devez avoir les droits sudo pour lancer l'installation.${NC}"
+    exit 1
+fi
 
 echo "Quel module installer sur cette machine ?"
 echo "1) L'Oreille"
