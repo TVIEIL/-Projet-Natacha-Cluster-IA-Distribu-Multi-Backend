@@ -92,6 +92,15 @@ if ! command -v conda &> /dev/null; then
     export PATH="$HOME/miniconda3/bin:$PATH"
 fi
 
+# On s'assure que le chemin est connu pour la suite
+export PATH="$HOME/miniconda3/bin:$PATH"
+
+#  Acceptation automatique des ToS (Pour tout le monde) ---
+echo "Vérification des conditions d'utilisation de Conda..."
+# On utilise le chemin complet vers conda pour être sûr que ça réponde
+$HOME/miniconda3/bin/conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main || true
+$HOME/miniconda3/bin/conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r || true
+
 # --- 2. Installation par module ---
 case $choice in
     1)
