@@ -405,7 +405,7 @@ wget https://huggingface.co/TheBloke/OpenHermes-2.5-Mistral-7B-GGUF/resolve/main
 ```
 
 [!NOTE]
-Le fichier de service natacha-brain.service pointe directement vers ce chemin (/home/vieil/modeles_natacha/).
+Le fichier de service natacha-brain.service pointe directement vers ce chemin (/modeles_natacha/).
 --- adaptez vieil par votre nom d'utilisateur ---
 
 Création du fichier de service natacha-brain.service
@@ -424,9 +424,9 @@ After=network.target
 User=vieil
 Group=vieil
 LimitMEMLOCK=infinity
-WorkingDirectory=/home/vieil/llama.cpp
+WorkingDirectory=%h/llama.cpp
 
-ExecStart=/home/vieil/llama.cpp/build/bin/llama-server \
+ExecStart=%h/llama.cpp/build/bin/llama-server \
     -m %h/openhermes-2.5-mistral-7b.Q4_K_M.gguf \
     --ctx-size 2048 \
     --threads 12 \
