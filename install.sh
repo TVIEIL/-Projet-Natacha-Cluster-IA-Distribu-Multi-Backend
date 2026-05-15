@@ -26,6 +26,18 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
+# Vérification de sécurité sur le nom du dossier
+if [[ "$(basename "$PWD")" != "Natacha-Project" ]]; then
+    echo -e "${YELLOW}Le dossier actuel ne s'appelle pas 'Natacha-Project'.${NC}"
+    echo -e "Pour que les services fonctionnent, je vais le renommer..."
+    cd ..
+    mv -- "$(basename "$PROJECT_ROOT")" "Natacha-Project"
+    cd "Natacha-Project"
+    PROJECT_ROOT=$(pwd)
+    echo -e "${GREEN}Dossier renommé avec succès.${NC}"
+fi
+
+
 echo -e "${GREEN}-------------------------------------------------------"
 echo "   Installation du Projet Natacha - Cluster IA"
 echo -e "-------------------------------------------------------${NC}"
