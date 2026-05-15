@@ -233,7 +233,7 @@ Création du service gstream_natacha.service
 sudo nano /etc/systemd/system/gstream_natacha.service
 ```
 
-Ajouter le code suivant (adaptez vieil par votre nom d'utilisateur)  :
+Ajouter le code suivant (adaptez vieil par votre nom d'utilisateur et groupe)  :
 ```
 [Unit]
 Description=GStreamer Receiver pour Natacha (Bouche)
@@ -420,6 +420,7 @@ MemoryHigh=15G
 [Install]
 WantedBy=multi-user.target
 ```
+CTRL + o puis 'entrée' pour sauver le fichier, puis CTRL + x pour sortir de nano
 
 </br>
 
@@ -508,6 +509,8 @@ Streaming Intelligent : Découpe la réponse en phrases pour que la "Bouche" com
 Modèle LLM : OpenHermes 2.5 Mistral 7B (GGUF Q4_K_M).
 
 Base Vectorielle : ChromaDB (Persistent Client).
+&nbsp;
+</br>
 
 🛠️ Installation du Module Cerveau
 
@@ -523,7 +526,7 @@ sudo apt install mosquitto mosquitto-clients -y
 Il est fortement recommandé d'utiliser l'environnement cerveau_natacha via Miniconda3.
 ```
 conda activate cerveau_natacha
-pip install chromadb paho-mqtt beautifulsoup4 requests python-dotenv
+pip install  -r ~/Natacha-Project/modules/brain/requirements.txt
 ```
 
 </br>
