@@ -1,18 +1,17 @@
 [Unit]
-Description=Oreille de Natacha (Whisper)
-After=network.target pulseaudio.service
+Description=Oreille de Natacha (Whisper) - User Mode
+# Indispensable pour s'assurer que l'environnement utilisateur est prêt
+After=default.target
 
 [Service]
-User=vieil
-Group=vieil
-WorkingDirectory=/home/vieil/Natacha-Project/modules/ear
-
-Environment="XDG_RUNTIME_DIR=/run/user/1000"
+Type=simple
+# Remplacez 'vieil' par votre nom d'utilisateur si nécessaire dans les chemins
+WorkingDirectory=%h/Natacha-Project/modules/ear
 Environment=PYTHONUNBUFFERED=1
 
-# Correction du nom de l'env et du nom du script
-ExecStart=/home/vieil/miniconda3/envs/oreille_natacha/bin/python3 /home/vieil/Natacha-Project/modules/ear/oreille_v1_30.py
+# Délai pour laisser le serveur audio (PulseAudio/PipeWire) s'initialiser
 ExecStartPre=/bin/sleep 10
+ExecStart=%h/miniconda3/envs/oreille_natacha/bin/python3 %h/Natacha-Project/modules/ear/oreille_v1_30.py
 Restart=always
 RestartSec=10
 
