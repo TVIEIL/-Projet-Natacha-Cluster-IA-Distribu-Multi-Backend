@@ -27,9 +27,9 @@ Type=simple
 User=vieil
 Group=vieil
 
-WorkingDirectory=/home/vieil/Natacha-Project/modules/brain
+WorkingDirectory=%h/Natacha-Project/modules/brain
 
-ExecStart=/home/vieil/miniconda3/envs/cerveau_natacha/bin/python3 brain_v33_12.py
+ExecStart=%h/miniconda3/envs/cerveau_natacha/bin/python3 brain_v33_12.py
 
 # Pour voir les logs en temps réel avec journalctl -u cerveau_natacha -f
 Environment=PYTHONUNBUFFERED=1
