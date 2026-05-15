@@ -292,7 +292,7 @@ systemctl --user start gstream_natacha.service
 On peut visualiser le status du service en tapant :
 
 ```
-systemctl status gstream-natacha
+systemctl --user status gstream_natacha
 ```
 Ou bien
 ```
@@ -427,7 +427,7 @@ LimitMEMLOCK=infinity
 WorkingDirectory=/home/vieil/llama.cpp
 
 ExecStart=/home/vieil/llama.cpp/build/bin/llama-server \
-    -m /home/vieil/modeles_natacha/openhermes-2.5-mistral-7b.Q4_K_M.gguf \
+    -m %h/openhermes-2.5-mistral-7b.Q4_K_M.gguf \
     --ctx-size 2048 \
     --threads 12 \
     --flash-attn on  \
@@ -707,10 +707,10 @@ Wants=network-online.target
 Type=simple
 User=vieil
 Group=vieil
-WorkingDirectory=/home/vieil/Natacha-Project/modules/mouth
+WorkingDirectory=%h/Natacha-Project/modules/mouth
 
 # Utilisation de l'environnement Conda et du script renommé
-ExecStart=/home/tvieil/miniconda3/envs/tts_env/bin/python3 mouth_v10.py
+ExecStart=%h/miniconda3/envs/tts_env/bin/python3 mouth_v10.py
 
 # Logs en temps réel pour journalctl -u bouche_natacha -f
 Environment=PYTHONUNBUFFERED=1
