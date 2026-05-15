@@ -13,29 +13,22 @@
 # limitations under the License.
 
 [Unit]
-Description=Oreille de Natacha (Whisper)
-After=network.target pulseaudio.service
-...
-[Unit]
 Description=Cerveau de Natacha - Pont Intelligence (MQTT/ChromaDB/Kiwix)
-# On attend que le réseau, le broker MQTT ET le serveur llama.cpp soient prêts
-After=network-online.target mosquitto.service llama-brain.service
-Requires=mosquitto.service llama-brain.service
+# On attend que le réseau et le broker MQTT soient prêts
+After=network-online.target
 
 [Service]
 Type=simple
-User=vieil
-Group=vieil
-
 WorkingDirectory=%h/Natacha-Project/modules/brain
 
+# Lancement avec l'environnement Conda dédié
 ExecStart=%h/miniconda3/envs/cerveau_natacha/bin/python3 brain_v33_12.py
 
-# Pour voir les logs en temps réel avec journalctl -u cerveau_natacha -f
+# Pour voir les logs en temps réel : journalctl --user -u cerveau_natacha -f
 Environment=PYTHONUNBUFFERED=1
 
 Restart=always
 RestartSec=10
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
