@@ -414,37 +414,18 @@ sudo nano /etc/systemd/system/natacha-brain.service
 ```
 &nbsp;
 </br>
-Code du service  (adaptez vieil par votre nom d'utilisateur) :
+Code du service :
 ```
-[Unit]
-Description=Cerveau de Natacha - Serveur Llama.cpp
-After=network.target
-
 [Service]
-User=vieil
-Group=vieil
 LimitMEMLOCK=infinity
 WorkingDirectory=%h/llama.cpp
 
 ExecStart=%h/llama.cpp/build/bin/llama-server \
-    -m %h/openhermes-2.5-mistral-7b.Q4_K_M.gguf \
-    --ctx-size 2048 \
-    --threads 12 \
-    --flash-attn on  \
-    --mlock \
-    --host 127.0.0.1 \
-    --port 8000
-
-Restart=always
-RestartSec=10
-
-# On laisse un peu plus de marge pour éviter que le service ne soit tué
-MemoryMax=16G
-# On enlève MemoryHigh ou on le met à 12G pour ne pas brider le mlock
-MemoryHigh=15G
+    -m %h/modeles_natacha/openhermes-2.5-mistral-7b.Q4_K_M.gguf \
+...
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 ```
 CTRL + o puis 'entrée' pour sauver le fichier, puis CTRL + x pour sortir de nano
 
@@ -705,12 +686,10 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=vieil
-Group=vieil
 WorkingDirectory=%h/Natacha-Project/modules/mouth
 
 # Utilisation de l'environnement Conda et du script renommé
-ExecStart=%h/miniconda3/envs/tts_env/bin/python3 mouth_v10.py
+ExecStart=%h/miniconda3/envs/tts_env/bin/python3 %h/Natacha-Project/modules/mouth/mouth_v10.py
 
 # Logs en temps réel pour journalctl -u bouche_natacha -f
 Environment=PYTHONUNBUFFERED=1
@@ -719,7 +698,7 @@ Restart=always
 RestartSec=5
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 ```
 
 🛠️ Rappel : Mise à jour du système
