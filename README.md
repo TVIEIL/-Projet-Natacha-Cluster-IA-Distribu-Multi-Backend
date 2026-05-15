@@ -166,26 +166,22 @@ Collez la configuration suivante (adaptez vieil par votre nom d'utilisateur) :
 Ini, TOML
 
 ```
-After=network.target pulseaudio.service
+[Unit]
+Description=Oreille de Natacha (Whisper) - User Mode
+# Indispensable pour s'assurer que l'environnement utilisateur est prêt
+After=default.target
 
 [Service]
-# On utilise l'utilisateur pour l'accès aux droits audio
-User=vieil
-Group=vieil
-
-# Dossier où se trouve ton script et ton .env
-WorkingDirectory=/home/vieil/Natacha-Project/modules/ear
-
-# Environnement nécessaire pour Ubuntu 24.04 et PulseAudio
-Environment="XDG_RUNTIME_DIR=/run/user/1000"
+Type=simple
+# Remplacez 'vieil' par votre nom d'utilisateur si nécessaire dans les chemins
+WorkingDirectory=%h/Natacha-Project/modules/ear
 Environment=PYTHONUNBUFFERED=1
 
-# Exécution directe sans screen
-ExecStart=/home/vieil/miniconda3/envs/natacha_oreille/bin/python3 bouche_receveur_final_v1_0.py
-
-# Redémarrage automatique en cas de souci
+# Délai pour laisser le serveur audio (PulseAudio/PipeWire) s'initialiser
+ExecStartPre=/bin/sleep 10
+ExecStart=%h/miniconda3/envs/oreille_natacha/bin/python3 %h/Natacha-Project/modules/ear/oreille_v1_30.py
 Restart=always
-RestartSec=5
+RestartSec=10
 
 [Install]
 WantedBy=default.target
@@ -195,17 +191,21 @@ CTRL + o puis 'entrée' pour sauver le fichier, puis CTRL + x pour sortir de nan
 Activez et lancez le service :
 
 ```
-sudo systemctl daemon-reload
-sudo systemctl enable oreille_natacha.service
-sudo systemctl start oreille_natacha.service
+sudo loginctl enable-linger $USER
+mkdir -p ~/.config/systemd/user/
+cp ~/Natacha-Project/modules/ear/systemd/oreille_natacha.service ~/.config/systemd/user/
+
+systemctl --user daemon-reload
+systemctl --user enable oreille_natacha.service
+systemctl --user start oreille_natacha.service
 ```
 
 ## 7. Monitoring au quotidien
 
-Grâce à screen, le nœud tourne en tâche de fond mais reste accessible à tout moment :
+Grâce à journalctl, le nœud tourne en tâche de fond mais reste accessible à tout moment :
 
 ```
-screen -r oreille_natacha
+journalctl -u oreille_natacha -f -o cat
 ```
 
 ![oreille_natacha_v_1_30.py](assets/oreille_natacha_v_1_30.png)
