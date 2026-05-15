@@ -313,12 +313,10 @@ chmod +x reset_audio_natacha.sh
 ./reset_audio_natacha.sh
 ```
 </br>
-Si vous n'avez pas de son session fermée mais qu'il apparait une fois la session ouverte
-Tapez la commande suivante :
+Pour que Natacha soit opérationnelle dès l'allumage du cluster, sans intervention humaine :
 
 ```
-sudo loginctl enable-linger votre_nom_utilisateur
-sudo usermod -aG audio votre_nom_utilisateur
+sudo loginctl enable-linger $USER
 ```
 
 &nbsp;
