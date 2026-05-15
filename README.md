@@ -309,6 +309,15 @@ chmod +x reset_audio_natacha.sh
 ./reset_audio_natacha.sh
 ```
 </br>
+Si vous n'avez pas de son session fermée mais qu'il apparait une fois la session ouverte
+Tapez la commande suivante :
+
+```
+sudo loginctl enable-linger votre_nom_utilisateur
+```
+
+&nbsp;
+</br>
 
 # 🧠 Le Cerveau (Nœud Central : Core i5)
 
