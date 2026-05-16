@@ -6,12 +6,12 @@ After=default.target
 [Service]
 Type=simple
 # Remplacez 'vieil' par votre nom d'utilisateur si nécessaire dans les chemins
-WorkingDirectory=%h/Natacha-Project/modules/ear
+WorkingDirectory=/home/vieil/Natacha-Project/modules/ear
 Environment=PYTHONUNBUFFERED=1
 
 # Délai pour laisser le serveur audio (PulseAudio/PipeWire) s'initialiser
 ExecStartPre=/bin/sleep 10
-ExecStart=%h/miniconda3/envs/oreille_natacha/bin/python3 %h/Natacha-Project/modules/ear/oreille_v1_30.py
+ExecStart=/home/vieil/miniconda3/envs/oreille_natacha/bin/python3 %h/Natacha-Project/modules/ear/oreille_v1_30.py
 Restart=always
 RestartSec=10
 
