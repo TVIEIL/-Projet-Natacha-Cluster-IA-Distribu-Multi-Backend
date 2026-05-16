@@ -711,7 +711,7 @@ Type=simple
 WorkingDirectory=%h/Natacha-Project/modules/mouth
 
 # Utilisation de l'environnement Conda et du script renommé
-ExecStart=%h/miniconda3/envs/tts_env/bin/python3 %h/Natacha-Project/modules/mouth/mouth_v10.py
+ExecStart=%h/miniconda3/envs/tts_env/bin/python3 %h/Natacha-Project/modules/mouth/bouche_natacha10.py
 
 # Logs en temps réel pour journalctl -u bouche_natacha -f
 Environment=PYTHONUNBUFFERED=1
