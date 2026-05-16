@@ -19,10 +19,9 @@ After=network.target
 [Service]
 # On supprime User et Group car c'est un service --user
 LimitMEMLOCK=infinity
-WorkingDirectory=%h/llama.cpp
+WorkingDirectory=/home/vieil/llama.cpp
 
-# Utilisation de %h pour le chemin du modèle et de l'exécutable
-ExecStart=%h/llama.cpp/build/bin/llama-server \
+ExecStart=/home/vieil/llama.cpp/build/bin/llama-server \
     -m %h/modeles_natacha/openhermes-2.5-mistral-7b.Q4_K_M.gguf \
     --ctx-size 2048 \
     --threads 12 \
