@@ -193,33 +193,33 @@ Créez le dossier de destination et ouvrez nano :
 
 ```
 mkdir -p ~/.config/systemd/user/
-nano ~/.config/systemd/user/oreille_natacha.service
 ```
 
 Collez la configuration suivante (adaptez vieil par votre nom d'utilisateur) :
 Ini, TOML
 
 ```
+cat << EOF > ~/.config/systemd/user/oreille_natacha.service
 [Unit]
 Description=Oreille de Natacha (Whisper) - User Mode
 After=default.target
 
 [Service]
 Type=simple
-# %h est remplacé automatiquement par votre répertoire Home
-WorkingDirectory=%h/Natacha-Project/modules/ear
+WorkingDirectory=/home/$USER/Natacha-Project/modules/ear
 Environment=PYTHONUNBUFFERED=1
 
 # Délai pour laisser le serveur audio s'initialiser
 ExecStartPre=/bin/sleep 10
-ExecStart=%h/miniconda3/envs/oreille_natacha/bin/python3 %h/Natacha-Project/modules/ear/oreille_v1_30.py
+
+ExecStart=/home/$USER/miniconda3/envs/oreille_natacha/bin/python3 /home/$USER/Natacha-Project/modules/ear/oreille_v1_30.py
 Restart=always
 RestartSec=10
 
 [Install]
 WantedBy=default.target
+EOF
 ```
-CTRL + o puis 'entrée' pour sauver le fichier, puis CTRL + x pour sortir de nano
 
 Activez et lancez le service :
 
@@ -265,30 +265,30 @@ sudo apt install gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugi
 Création du service gstream_natacha.service
 ```
 mkdir -p ~/.config/systemd/user/
-nano ~/.config/systemd/user/gstream_natacha.service
 ```
 
 Ajouter le code suivant  :
 ```
+cat << EOF > ~/.config/systemd/user/bouche_receveur.service
 [Unit]
 Description=GStreamer Receiver pour Natacha (Bouche)
 After=network.target
 
 [Service]
 Type=simple
-# Définit automatiquement le dossier de travail dans votre Home
-WorkingDirectory=%h/Natacha-Project/modules/ear
+# Remplacé automatiquement par /home/votre_nom_utilisateur/
+WorkingDirectory=/home/$USER/Natacha-Project/modules/ear
 
 # Utilise l'environnement Conda oreille_natacha pour lancer le récepteur
-ExecStart=%h/miniconda3/envs/oreille_natacha/bin/python3 %h/Natacha-Project/modules/ear/bouche_receveur_final_v1_0.py
+ExecStart=/home/$USER/miniconda3/envs/oreille_natacha/bin/python3 /home/$USER/Natacha-Project/modules/ear/bouche_receveur_final_v1_0.py
 
 Restart=always
 RestartSec=5
 
 [Install]
 WantedBy=default.target
+EOF
 ```
-CTRL + o puis 'entrée' pour sauver le fichier, puis CTRL + x pour sortir de nano
 
 
 Activez et lancez le service :
@@ -419,30 +419,28 @@ Le fichier de service natacha-brain.service pointe directement vers ce chemin (~
 --- adaptez vieil par votre nom d'utilisateur ---
 
 Création du fichier de service natacha-brain.service
-```
-nano ~/.config/systemd/user/natacha-brain.service
-```
+
 &nbsp;
 </br>
 Code du service :
 ```
+cat << EOF > ~/.config/systemd/user/cerveau_natacha.service
 [Unit]
 Description=Cerveau de Natacha - Serveur Llama.cpp
 After=network.target
 
 [Service]
-# On ne met PAS de User=vieil ici pour le mode --user
 LimitMEMLOCK=infinity
-WorkingDirectory=%h/llama.cpp
+WorkingDirectory=/home/$USER/llama.cpp
 
-ExecStart=%h/llama.cpp/build/bin/llama-server \
-    -m %h/modeles_natacha/openhermes-2.5-mistral-7b.Q4_K_M.gguf \
-    --ctx-size 2048 \
-    --threads 12 \
-    --flash-attn on \
-    --mlock \
-    --host 127.0.0.1 \
-    --port 8000
+ExecStart=/home/$USER/llama.cpp/build/bin/llama-server \\
+    -m /home/$USER/modeles_natacha/openhermes-2.5-mistral-7b.Q4_K_M.gguf \\
+    --ctx-size 2048 \\
+    --threads 12 \\
+    --flash-attn on \\
+    --mlock \\
+    --host 127.0.0.1 \\
+    --port 8080
 
 Restart=always
 RestartSec=10
@@ -451,8 +449,8 @@ MemoryHigh=15G
 
 [Install]
 WantedBy=default.target
+EOF
 ```
-CTRL + o puis 'entrée' pour sauver le fichier, puis CTRL + x pour sortir de nano
 
 </br>
 
@@ -573,30 +571,33 @@ Au premier lancement, le script crée automatiquement le dossier ./memoire_chrom
 4. Création du fichier service  cerveau_natacha.service
 ```
 mkdir -p ~/.config/systemd/user/
-nano ~/.config/systemd/user/cerveau_natacha.service
 ```
-5. Ajoute le code suivant (adapte le nom de l'utilisateur) :
+5. Ajoute le code suivant :
 ```
+cat << EOF > ~/.config/systemd/user/bouche_natacha.service
 [Unit]
-Description=Cerveau de Natacha - Pont Intelligence (MQTT/ChromaDB/Kiwix)
-# On attend que le réseau et le broker MQTT soient prêts
+Description=Bouche de Natacha - Synthèse Vocale (Piper/GStreamer)
 After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=%h/Natacha-Project/modules/brain
+WorkingDirectory=/home/$USER/Natacha-Project/modules/mouth
+ExecStart=/home/$USER/miniconda3/envs/tts_env/bin/python3 bouche_natacha10.py
 
-# Lancement avec l'environnement Conda dédié
-ExecStart=%h/miniconda3/envs/cerveau_natacha/bin/python3 brain_v33_12.py
-
-# Pour voir les logs en temps réel : journalctl --user -u cerveau_natacha -f
+# Logs forcés en temps réel
 Environment=PYTHONUNBUFFERED=1
 
+# Redirection directe des logs dans ton dossier
+StandardOutput=append:/home/$USER/Natacha-Project/modules/mouth/bouche_natacha.log
+StandardError=append:/home/$USER/Natacha-Project/modules/mouth/bouche_natacha.log
+
 Restart=always
-RestartSec=10
+RestartSec=5
 
 [Install]
 WantedBy=default.target
+EOF
 ```
 6. Activation du service
 ```
