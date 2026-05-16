@@ -662,6 +662,7 @@ wget https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/med
 wget https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx.json -P ~/modeles_natacha/
 ```
 
+
 🐍 Configuration de l'environnement Python (tts_env)
 
 On utilise Miniconda3 pour isoler les outils de synthèse vocale.
@@ -690,6 +691,12 @@ sudo apt install gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugi
     udpsink host=192.168.1.90 port=5000
 
 
+Création du fichier service sous l'utilisateur 
+
+```
+mkdir -p ~/.config/systemd/user/
+nano ~/.config/systemd/user/bouche_natacha.service
+```
 
 Création du fichier de service : bouche_natacha.service
 
