@@ -11,7 +11,7 @@ Group=vieil
 WorkingDirectory=/home/vieil/Natacha-Project/modules/mouth
 
 # Utilisation de l'environnement Conda et du script renommé
-ExecStart=/home/tvieil/miniconda3/envs/tts_env/bin/python3 mouth_v10.py
+ExecStart=/home/tvieil/miniconda3/envs/tts_env/bin/python3 bouche_natacha10.py
 
 # Logs en temps réel pour journalctl -u bouche_natacha -f
 Environment=PYTHONUNBUFFERED=1
