@@ -57,11 +57,11 @@ chmod +x install.sh
 ./install.sh
 ```
 
-## 0. Prérequis : Installation de Miniconda3
+## 0.  Installation manuelle -  de Miniconda3
 
 Si Miniconda n'est pas encore présent sur votre système, vous devez l'installer en premier. La version dépend du type de processeur de votre nœud.
 
-Pour un PC classique (Intel/AMD - ex: i5, Ryzen) :
+## Pour un PC classique (Intel/AMD - ex: i5, Ryzen) :
 ```
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 ./Miniconda3-latest-Linux-x86_64.sh
@@ -80,6 +80,16 @@ Processus d'installation (commun) :
  Validez l'emplacement d'installation par défaut en appuyant sur Entrée.
  
  Important : À la fin de l'installation, le script vous demande s'il doit exécuter conda init. Tapez impérativement yes.
+ 
+ &nbsp;
+ </br>
+ 
+ Si vous ne l'avez pas fait tapez ceci,
+Vous devez accepter les conditions d'utilisation
+```
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+```
  
  Enfin, pour que votre terminal prenne en compte l'installation immédiatement (sans avoir à vous déconnecter), tapez :
 
