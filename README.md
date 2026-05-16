@@ -735,7 +735,10 @@ systemctl --user daemon-reload
 # 2. On active le service nom au démarrage
 systemctl --user enable bouche_natacha.service
 
-# 3. On peut vérifier que tout tourne
+# 3. On démarre le service
+systemctl --user start bouche_natacha.service
+
+# 4. On peut vérifier que tout tourne
 systemctl --user status bouche_natacha.service
 ```
 
