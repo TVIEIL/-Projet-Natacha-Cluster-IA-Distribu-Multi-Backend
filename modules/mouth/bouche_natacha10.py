@@ -60,6 +60,7 @@ def charger_ou_creer_env(chemin_complet):
             # Utilisation de chemins génériques basés sur le home de l'utilisateur
             home = os.path.expanduser("~")
             f.write(f"PIPER_EXE={home}/piper_bin/piper/piper\n")
+            # Choix par défaut : fr_FR-siwis-medium.onnx ou fr_FR-upmc-medium.onnx
             f.write(f"MODEL_PATH={home}/bouche_natacha/models/fr_FR-siwis-medium.onnx\n")
             f.write("WAV_PATH=/tmp/natacha_temp.wav\n")
         print("✅ Fichier .env créé. Vérifiez les chemins à l'intérieur.")
