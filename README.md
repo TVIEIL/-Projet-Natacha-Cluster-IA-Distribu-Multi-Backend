@@ -667,9 +667,13 @@ tar -xf piper_arm64.tar.gz
 
 Bash
 ```
-# Téléchargement du modèle
+# Téléchargement du modèle fr_FR-siwis-medium.onnx
 wget https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx -P ~/modeles_natacha/
 wget https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx.json -P ~/modeles_natacha/
+
+# Téléchargement du modèle fr_FR-upmc-medium.onnx
+wget https://huggingface.co/rhasspy/piper-voices/resolve/834f23262168a7e809179465e4113f23f5a7d1f7/fr/fr_FR/upmc/medium/fr_FR-upmc-medium.onnx  -P ~/modeles_natacha/
+wget https://huggingface.co/rhasspy/piper-voices/resolve/834f23262168a7e809179465e4113f23f5a7d1f7/fr/fr_FR/upmc/medium/fr_FR-upmc-medium.onnx.json  -P ~/modeles_natacha/
 ```
 
 
