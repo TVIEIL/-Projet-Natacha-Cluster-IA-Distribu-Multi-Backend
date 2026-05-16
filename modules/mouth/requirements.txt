@@ -1,2 +1,3 @@
 # Dépendances Python pour la Bouche (TTS & Sortie Audio)
 paho-mqtt>=2.0.0
+python-dotenv
