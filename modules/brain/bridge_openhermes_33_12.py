@@ -89,6 +89,16 @@ URL_SLOTS = URL_SERVEUR.replace("/v1/chat/completions", "/slots/0?action=release
 
 TOPIC_QUESTION, TOPIC_REPONSE = "natacha/question", "natacha/reponse"
 TOPIC_APPRENDRE, TOPIC_RAZ = "natacha/apprendre", "natacha/raz_memoire"
+TOPIC_OEIL_DETECTION = "natacha/oeil_detection"
+
+# --- AJOUT MODULE ŒIL ---
+oeil_statut = "absent"
+oeil_veste = "Inconnue"
+oeil_emotion = "Neutre"
+
+# --- AJOUT CONTRÔLE DE FLUX ---
+en_traitement = False # True quand Natacha génère une réponse
+buffer_oeil = None    # Stocke l'info de l'Œil en attente
 
 # File d'attente pour les questions
 file_questions = queue.Queue(maxsize=10)
@@ -208,6 +218,10 @@ def extraire_connaissance_wiki(question):
 
 def traiter_question(question, client_mqtt):
     global KIWIX_OK
+    
+    global en_traitement, oeil_statut, oeil_veste, oeil_emotion, buffer_oeil
+    en_traitement = True # 🔒 On ferme la porte : l'Œil ne peut plus mettre à jour
+    
     print(f"\nInterlocuteur : {question}")
     print("  [Step 1] Début du traitement parallélisé...")
     
@@ -393,9 +407,16 @@ def traiter_question(question, client_mqtt):
     if souvenirs_perso:
         bloc_contexte += f"### SOUVENIRS PERSONNELS (CHROMA) :\n{souvenirs_perso}\n--------------------------\n"
 
+    # --- CONSTRUCTION CONTEXTE ŒIL ---
+    if oeil_statut == "present":
+        contexte_oeil = f"Thierry est devant son établi, il porte un vêtement {oeil_veste} et semble {oeil_emotion}."
+    else:
+        contexte_oeil = "Thierry est absent de son établi."
+
 # Construction finale épurée (v33.12as)
     prompt = (
         f"SYSTEME : Tu es Natacha, assistante IA experte. Nous sommes le {h_str}.\n"
+        f"ÉTAT VISUEL : {contexte_oeil}\n"
         "NOTE TECHNIQUE : ChromaDB est ta base de mémoire sémantique contenant les SEULS faits réels sur Thierry.\n\n"
         f"{bloc_contexte}"
         "### INSTRUCTIONS STRICTES DE VÉRITÉ :\n"
@@ -566,6 +587,17 @@ def traiter_question(question, client_mqtt):
         print(f"❌ Erreur critique LLM : {e}")
 
 
+    # À la toute fin, juste avant de quitter la fonction :
+    if buffer_oeil:
+        # On vide le buffer, Natacha prend enfin la dernière info captée pendant qu'elle bossait
+        oeil_statut = buffer_oeil.get("statut")
+        oeil_veste = buffer_oeil.get("couleur_vestement")
+        oeil_emotion = buffer_oeil.get("emotion")
+        buffer_oeil = None
+        
+    en_traitement = False # 🔓 On rouvre la porte
+
+
 # ==============================================================================
 # 5. WORKER ET MQTT
 # ==============================================================================
@@ -588,7 +620,21 @@ def worker_natacha():
         finally: file_questions.task_done()
 
 def on_message(client, userdata, msg):
+    global oeil_statut, oeil_veste, oeil_emotion, en_traitement, buffer_oeil
     p = msg.payload.decode()
+
+    if msg.topic == "natacha/oeil_detection":
+        try:
+            d = json.loads(msg.payload.decode())
+            if en_traitement:
+                # Si Natacha bosse, on met en buffer (elle aura la dernière info à la fin)
+                buffer_oeil = d
+            else:
+                # Si elle est libre, on met à jour direct
+                oeil_statut, oeil_veste, oeil_emotion = d.get("statut"), d.get("couleur_vetement"), d.get("emotion")
+        except: pass
+        return
+    
     action = None
     if msg.topic == TOPIC_QUESTION: action = ("QUESTION", p)
     elif msg.topic == TOPIC_APPRENDRE: action = ("APPRENDRE", p)
@@ -618,7 +664,7 @@ client.on_message = on_message
 
 try:
     client.connect(BROKER, 1883)
-    client.subscribe([(TOPIC_QUESTION, 0), (TOPIC_APPRENDRE, 0), (TOPIC_RAZ, 0)])
+    client.subscribe([(TOPIC_QUESTION, 0), (TOPIC_APPRENDRE, 0), (TOPIC_RAZ, 0), (TOPIC_OEIL_DETECTION, 0)])
 except Exception as e:
     print(f"❌ Connexion Broker Impossible ({BROKER}) : {e}")
     exit(1)
