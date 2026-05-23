@@ -670,5 +670,5 @@ except Exception as e:
     exit(1)
 
 threading.Thread(target=worker_natacha, daemon=True).start()
-print(f"🚀 Natacha v33.12at en ligne. (DB: {CHROMA_DIR})")
+print(f"🚀 Natacha v33.12au en ligne. (DB: {CHROMA_DIR})")
 client.loop_forever()
