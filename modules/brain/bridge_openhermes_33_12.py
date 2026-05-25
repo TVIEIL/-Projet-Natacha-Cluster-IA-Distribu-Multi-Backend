@@ -591,7 +591,7 @@ def traiter_question(question, client_mqtt):
     if buffer_oeil:
         # On vide le buffer, Natacha prend enfin la dernière info captée pendant qu'elle bossait
         oeil_statut = buffer_oeil.get("statut")
-        oeil_veste = buffer_oeil.get("couleur_vestement")
+        oeil_veste = buffer_oeil.get("couleur_vetement")
         oeil_emotion = buffer_oeil.get("emotion")
         buffer_oeil = None
         
