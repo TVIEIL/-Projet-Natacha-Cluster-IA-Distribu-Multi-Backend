@@ -24,8 +24,17 @@
 # DESCRIPTION : Identification, scan de fréquences et gestion d'erreurs de saisie.
 # ==============================================================================
 
+
 import pyaudio
 import os
+import subprocess
+import re
+import atexit
+import getpass
+import time
+
+# Récupère automatiquement le nom de l'utilisateur connecté
+USER = getpass.getuser()
 
 # --- PARAMÈTRES ---
 FORMAT = pyaudio.paInt16
@@ -33,7 +42,72 @@ CHANNELS = 1
 CHUNK = 1024
 RECORD_SECONDS = 3
 
-p = pyaudio.PyAudio()
+
+# ***  forcer_profil_pro_audio() ***
+# BUG propre à mon DONGLE USB 
+# il disparait de la liste des entrées 
+# pactl list cards short => ... 115    alsa_card.usb-Generic_USB_DONGLE_33202107269042-00    alsa ...
+# pactl list sources | grep -i "DONGLE" -A 5 => 
+# pactl list cards | grep -A 20 "115"  => output:iec958-ac3-surround-51: Sortie Surround numérique 5.1 (IEC958/AC3) (sorties : 1, sources : 0, priorité : 300, disponible : oui) 
+# le système le considère uniquement comme une sortie
+
+def forcer_profil_pro_audio():
+    print("🔊 Forçage du profil 'pro-audio' sur le dongle...")
+    # On utilise l'ID '115' ou le nom de la carte
+    # On le fait via subprocess pour ne pas dépendre de bibliothèques tierces
+    
+    result = subprocess.run(["pactl", "set-card-profile", "115", "pro-audio"], capture_output=True)
+    
+    if result.returncode != 0:
+        print(f"⚠️ Attention : Impossible de forcer le profil pro-audio : {result.stderr}")
+    else:
+        print("✅ Profil 'pro-audio' activé avec succès.")
+
+# --- DÉFINITION DE LA SORTIE AUTOMATIQUE ---
+def au_revoir():
+    print("\n🔄 Rétablissement des services Natacha...")
+    gestion_services("start")
+
+atexit.register(au_revoir)
+
+def gestion_services(action):
+    """ action : 'stop' ou 'start' """
+    # Définition des services avec leur type (system ou user)
+    services = [
+        {"name": "gstream_natacha.service", "type": "system"},
+        {"name": "oreille_natacha.service", "type": "user"}
+    ]
+    
+    for svc in services:
+        print(f"⚙️ {action.capitalize()} du service {svc['name']} ({svc['type']} mode)...")
+        
+        if svc['type'] == "system":
+            # Pour gstream_natacha, on a besoin de sudo
+            subprocess.run(["sudo", "systemctl", action, svc['name']], capture_output=True)
+        else:
+            # Pour oreille_natacha, on utilise --user, pas de sudo
+            # Attention : on doit spécifier l'utilisateur pour le mode user dans un script
+            subprocess.run(["systemctl", "--user", action, svc['name']], capture_output=True)
+
+def tuer_processus_fantomes():
+    """ Tue les processus liés à l'utilisateur courant """
+    print(f"🧹 Nettoyage des processus fantômes pour l'utilisateur : {USER}...")
+    # On utilise la variable USER ici
+    subprocess.run(f"pkill -u {USER} -f natacha", shell=True)
+
+def obtenir_usb_id(nom_peripherique):
+    """ Extrait juste le VID:PID à partir de lsusb """
+    try:
+        lsusb_out = subprocess.check_output("lsusb", shell=True).decode()
+        mots = nom_peripherique.split()
+        for mot in mots:
+            if len(mot) > 3:
+                match = re.search(f"ID ([0-9a-fA-F]{{4}}:[0-9a-fA-F]{{4}}).*?{mot}", lsusb_out, re.IGNORECASE)
+                if match:
+                    return match.group(1)
+        return "ID_INCONNU"
+    except Exception as e:
+        return "ID_ERREUR"
 
 def obtenir_peripheriques_valides():
     """ Retourne deux listes contenant les index valides pour In et Out """
@@ -41,6 +115,10 @@ def obtenir_peripheriques_valides():
     outputs = []
     for i in range(p.get_device_count()):
         dev = p.get_device_info_by_index(i)
+        
+        # DEBUG 
+        # print(f"DEBUG: Index {i} | Name: {dev.get('name')} | MaxIn: {dev.get('maxInputChannels')}")
+        
         if dev.get('maxInputChannels') > 0:
             inputs.append(i)
         if dev.get('maxOutputChannels') > 0:
@@ -113,58 +191,80 @@ def test_echo(input_idx, output_idx, rate_test):
 # ==============================================================================
 # LOGIQUE PRINCIPALE
 # ==============================================================================
-print("="*50)
-print("🛠️ CALIBRAGE AUDIO INTERACTIF - PROJET NATACHA")
-print("="*50)
+if __name__ == "__main__":
+    print("="*50)
+    print("🛠️ CALIBRAGE AUDIO INTERACTIF - PROJET NATACHA")
+    print("="*50)
 
-# 1. On récupère et on liste
-valid_ins, valid_outs = obtenir_peripheriques_valides()
-lister_peripheriques(valid_ins, valid_outs)
+    # 1. On arrête tout avant de toucher à l'audio
+    print("\n🛡️ Préparation : Arrêt des services et nettoyage...")
+    gestion_services("stop")
+    tuer_processus_fantomes()
 
-try:
-    # 2. Saisie sécurisée des Index
-    in_idx = saisir_index_valide(valid_ins, "\n👉 Index MICROPHONE : ")
-    out_idx = saisir_index_valide(valid_outs, "👉 Index CASQUE : ")
+    # Correction du bug avec mon USB DONGLE qui passe en sortie au lien d'entrée
+    forcer_profil_pro_audio()
     
-    # 3. Scan automatique
-    freq_ok = scanner_frequences(in_idx, out_idx)
+    # 2. LA PAUSE DE SÉCURITÉ (Crucial)
+    print("⏳ Attente de libération du bus USB...")
+    time.sleep(2) # 2 secondes suffisent généralement pour stabiliser le bus
+
+    # 3. INSTANCIATION ICI (après le forçage du profil)
+    p = pyaudio.PyAudio()
+
+    # 4. On récupère et on liste
+    valid_ins, valid_outs = obtenir_peripheriques_valides()
+    lister_peripheriques(valid_ins, valid_outs)
+
+    try:
+        # 1. Saisie sécurisée des Index
+        in_idx = saisir_index_valide(valid_ins, "\n👉 Index MICROPHONE : ")
+        out_idx = saisir_index_valide(valid_outs, "👉 Index CASQUE : ")
     
-    if not freq_ok:
-        print("\nERREUR : Aucune fréquence standard acceptée par ce matériel.")
-    else:
-        print("\n--- FRÉQUENCES SUPPORTÉES ---")
-        for i, f in enumerate(freq_ok):
-            print(f"{i+1}. {f} Hz")
-        
-        # Saisie sécurisée de la fréquence
-        choix_f = 0
-        while choix_f < 1 or choix_f > len(freq_ok):
-            try:
-                choix_f = int(input(f"👉 Sélectionnez une fréquence (1-{len(freq_ok)}) : "))
-            except ValueError:
-                pass
-        
-        selected_rate = freq_ok[choix_f - 1]
-        
-        # 4. Test auditif et sauvegarde
-        if test_echo(in_idx, out_idx, selected_rate):
-            if input("\nAvez-vous entendu votre voix correctement ? (o/n) : ").lower() == 'o':
-                nom_in = p.get_device_info_by_index(in_idx).get('name')
-                nom_out = p.get_device_info_by_index(out_idx).get('name')
-                
-                print(f"\n💾 Mise à jour du fichier .env...")
-                with open(".env", "w") as env_file:
-                    env_file.write(f"MIC_DEVICE_NAME={nom_in}\n")
-                    env_file.write(f"SPEAKER_DEVICE_NAME={nom_out}\n")
-                    env_file.write(f"AUDIO_SAMPLE_RATE={selected_rate}\n")
-                
-                print("✅ Configuration sauvegardée !")
-            else:
-                print("\n🔄 Calibrage annulé.")
+        # 2. Scan automatique
+        freq_ok = scanner_frequences(in_idx, out_idx)
+    
+        if not freq_ok:
+            print("\nERREUR : Aucune fréquence standard acceptée par ce matériel.")
         else:
-            print("\n❌ Échec du test d'écho.")
+            print("\n--- FRÉQUENCES SUPPORTÉES ---")
+            for i, f in enumerate(freq_ok):
+                print(f"{i+1}. {f} Hz")
+        
+            # 3. Saisie sécurisée de la fréquence
+            choix_f = 0
+            while choix_f < 1 or choix_f > len(freq_ok):
+                try:
+                    choix_f = int(input(f"👉 Sélectionnez une fréquence (1-{len(freq_ok)}) : "))
+                except ValueError:
+                    pass
+        
+            selected_rate = freq_ok[choix_f - 1]
+        
+            # 4. Test auditif et sauvegarde
+            if test_echo(in_idx, out_idx, selected_rate):
+                if input("\nAvez-vous entendu votre voix correctement ? (o/n) : ").lower() == 'o':
+                    nom_in = p.get_device_info_by_index(in_idx).get('name')
+                    nom_out = p.get_device_info_by_index(out_idx).get('name')
+                
+                    print(f"\n💾 Mise à jour du fichier .env avec IDs matériels...")
+                    id_mic = obtenir_usb_id(p.get_device_info_by_index(in_idx).get('name'))
+                    id_spk = obtenir_usb_id(p.get_device_info_by_index(out_idx).get('name'))
+                
+                    with open(".env", "w") as env_file:
+                        env_file.write(f"MIC_USB_ID={id_mic}\n")
+                        env_file.write(f"SPEAKER_USB_ID={id_spk}\n")
+                        env_file.write(f"AUDIO_SAMPLE_RATE={selected_rate}\n")
+                    
+                        print(f"✅ Configuration sauvegardée avec IDs : {id_mic} / {id_spk}")
+                    
+                
+                    print("✅ Configuration sauvegardée !")
+                else:
+                    print("\n🔄 Calibrage annulé.")
+            else:
+                print("\n❌ Échec du test d'écho.")
 
-except KeyboardInterrupt:
-    print("\n\nArrêt du script.")
-finally:
-    p.terminate()
+    except KeyboardInterrupt:
+        print("\n🛑 Arrêt manuel détecté.")
+    finally:
+        p.terminate()
