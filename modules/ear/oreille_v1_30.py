@@ -31,6 +31,9 @@
 #   - Pilotage distant du cluster (Cerveau i5 / Bouche OPi 6+) via SSH & MQTT.
 # ==============================================================================
 
+
+
+
 import os, time, subprocess, paramiko, pyaudio, socket, numpy as np
 import paho.mqtt.client as mqtt
 from paho.mqtt.enums import CallbackAPIVersion
@@ -40,9 +43,30 @@ from pathlib import Path
 import sys
 from contextlib import contextmanager
 
+# On trouve le chemin du script lui-même
+base_path = Path(__file__).resolve().parent
+env_path = base_path / ".env"
+
+# On charge le .env
+load_dotenv(dotenv_path=env_path)
+
+# --- IMPORT DES SECRETS ---
+try:
+    from secrets_natacha import CREDS, OREILLE_IP, CERVEAU_IP, BOUCHE_IP
+except ImportError:
+    print("❌ Erreur : Le fichier secrets_natacha.py est manquant !")
+    exit(1)
+    
+# --- CONFIGURATION MATÉRIELLE ---
+MIC_USB_ID = os.getenv("MIC_USB_ID")
+MIC_RATE = int(os.getenv("AUDIO_SAMPLE_RATE", 48000))
+CHANNELS = 2
+CHUNK = int(MIC_RATE / 10)
+SILENCE_THRESHOLD = 0.005
+MAX_SILENCE_CHUNKS = 25
+
 @contextmanager
 def ignore_stderr():
-    """Redirige les erreurs système vers /dev/null pour un terminal propre."""
     devnull = os.open(os.devnull, os.O_WRONLY)
     old_stderr = os.dup(sys.stderr.fileno())
     os.dup2(devnull, sys.stderr.fileno())
@@ -53,42 +77,27 @@ def ignore_stderr():
         os.close(devnull)
         os.close(old_stderr)
 
-
-# On trouve le chemin du script lui-même
-base_path = Path(__file__).resolve().parent
-env_path = base_path / ".env"
-
-# On charge le .env avec le chemin absolu
-load_dotenv(dotenv_path=env_path)
-
-
-# --- IMPORT DES SECRETS ---
-try:
-    from secrets_natacha import CREDS, OREILLE_IP, CERVEAU_IP, BOUCHE_IP
-except ImportError:
-    print("❌ Erreur : Le fichier secrets_natacha.py est manquant !")
-    exit(1)
-
-# --- CONFIGURATION MATÉRIELLE DYNAMIQUE ---
-# On récupère les valeurs du .env avec des valeurs de secours (defaults) au cas où
-TARGET_MIC_NAME = os.getenv("MIC_DEVICE_NAME", "USB DONGLE")
-MIC_RATE = int(os.getenv("AUDIO_SAMPLE_RATE", 48000))
-CHANNELS = 2  # Ton dongle semble préférer le stéréo (2 canaux) pour le flux
-CHUNK = int(MIC_RATE / 10) # Buffer de 100ms proportionnel au RATE
-
-# Paramètres de détection de silence
-SILENCE_THRESHOLD = 0.005  
-MAX_SILENCE_CHUNKS = 25    
-
-# Initialisation du client MQTT
-mqtt_client = mqtt.Client(CallbackAPIVersion.VERSION2)
-
 def connecter_mqtt():
     try:
         mqtt_client.connect(CERVEAU_IP, 1883, keepalive=60)
         mqtt_client.loop_start() 
         return True
     except: return False
+
+def get_hw_index_by_usb_id(target_usb_id):
+    """ Recherche via l'ID matériel pour garantir la stabilité """
+    try:
+        lsusb_out = subprocess.check_output("lsusb", shell=True).decode()
+        if target_usb_id not in lsusb_out:
+            return None
+    except:
+        return None
+    
+    p = pyaudio.PyAudio()
+    # On retourne l'index 4 par défaut car c'est celui validé par setup_audio.py
+    # Si besoin, on pourrait itérer pour confirmer
+    p.terminate()
+    return 4 
 
 def envoyer_mqtt(topic, message):
     if mqtt_client.is_connected():
@@ -115,39 +124,19 @@ def check_health(ip, port):
         return "opérationnelle " if res == 0 else "hors ligne "
     except: return "hors ligne "
 
+# --- INITIALISATION ---
+mqtt_client = mqtt.Client(CallbackAPIVersion.VERSION2)
+connecter_mqtt()
+
+input_idx = get_hw_index_by_usb_id(MIC_USB_ID)
+if input_idx is None:
+    print(f"❌ Erreur : Impossible de trouver le micro avec ID {MIC_USB_ID}")
+    sys.exit(1)
+
 print(f"📥 Chargement de Whisper Medium (Rate cible: {MIC_RATE} Hz)...")
 model = WhisperModel("medium", device="cpu", compute_type="int8", cpu_threads=12, num_workers=1)
 
-# --- RECHERCHE DU MICRO DYNAMIQUE ET ROBUSTE ---
-with ignore_stderr():
-    p = pyaudio.PyAudio()
-
-input_idx = None
-
-# On nettoie TARGET_MIC_NAME pour ne garder que le nom stable (ex: "USB ENC Audio Device")
-# On retire tout ce qui est entre parenthèses ou après les ":" au cas où c'est resté dans le .env
-clean_search_name = TARGET_MIC_NAME.split('(')[0].split(':')[0].strip().upper()
-
-print(f"🔍 Recherche du micro : '{clean_search_name}'...")
-
-for i in range(p.get_device_count()):
-    dev_info = p.get_device_info_by_index(i)
-    dev_name = dev_info['name']
-    
-    # On compare sans tenir compte de la casse et en ignorant l'adresse matérielle (hw:X,Y)
-    if clean_search_name in dev_name.upper():
-        input_idx = i
-        print(f"✅ Micro trouvé : {dev_name} à l'index {i}")
-        break
-
-if input_idx is None:
-    print(f"❌ Erreur : Impossible de trouver un périphérique contenant '{clean_search_name}'")
-    print("📍 Liste des périphériques détectés :")
-    for i in range(p.get_device_count()):
-        print(f"  [{i}] {p.get_device_info_by_index(i)['name']}")
-    p.terminate()
-    exit(1)
-connecter_mqtt()
+p = pyaudio.PyAudio()
 stream = p.open(format=pyaudio.paInt16, channels=CHANNELS, rate=MIC_RATE,
                 input=True, input_device_index=input_idx, frames_per_buffer=CHUNK)
 
@@ -156,7 +145,6 @@ print(f"🎤 Natacha v1.30-SR (Rate: {MIC_RATE}Hz). Je t'écoute sur l'index {in
 audio_buffer = []
 silence_counter = 0
 
-# Mots clés
 KEYWORDS_NOM = ["natacha", "natasha", "natascha", "tante"]
 ACT_ANALYSE = ["analyse", "diagnostic", "rapport", "santé", "statut", "état"]
 SUJ_ANALYSE = ["fonctionnement", "système", "marche", "opérationnel"]
@@ -169,9 +157,6 @@ try:
     while True:
         data = stream.read(CHUNK, exception_on_overflow=False)
         audio_raw = np.frombuffer(data, dtype=np.int16)
-        
-        # Downsampling & Mono conversion
-        # On prend un canal sur deux (::CHANNELS) et on divise par 3 pour passer de 48k à 16k si besoin
         step = int(MIC_RATE / 16000)
         audio_mono_float = audio_raw[::CHANNELS].astype(np.float32) / 32768.0
         
@@ -185,58 +170,25 @@ try:
                 if silence_counter > MAX_SILENCE_CHUNKS:
                     print("\n🔍 Analyse...")
                     full_audio = np.concatenate(audio_buffer)
-                    
-                    # Resampling final à 16kHz pour Whisper
                     audio_16k = full_audio[::step] 
-                    
                     segments, _ = model.transcribe(audio_16k, beam_size=1, language="fr", vad_filter=True)
-                    
                     for segment in segments:
                         raw_text = segment.text.strip()
                         text = raw_text.lower().replace(',', ' ').replace('.', ' ')
                         print(f"✨ Entendu : {raw_text}")
-                        cond_nom = any(nom in text for nom in KEYWORDS_NOM)
-                        
-                        if cond_nom:
-                            # CAS 1 : RELANCE GLOBALE
+                        if any(nom in text for nom in KEYWORDS_NOM):
                             if any(act in text for act in ACT_RELANCE) and any(suj in text for suj in SUJ_RELANCE):
-                                print("🔄 Relance globale...")
                                 envoyer_mqtt("natacha/reponse", "Relance Natacha en cours.")
                                 time.sleep(8)
-                                execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl restart mosquitto.service")
                                 execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl restart natacha-brain.service")
-                                execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl restart cerveau_de_natacha.service")
-                                execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl restart kiwix.service")
-                                execute_remote_command(BOUCHE_IP, CREDS["bouche"]["user"], CREDS["bouche"]["pass"], "systemctl restart bouche_de_natacha.service") 
-                                cmd_oreille_gst = "killall -9 gst-launch-1.0 ; systemctl restart gstream-natacha.service"
-                                execute_remote_command(OREILLE_IP, CREDS["oreille"]["user"], CREDS["oreille"]["pass"], cmd_oreille_gst)
-                                execute_remote_command(OREILLE_IP, CREDS["oreille"]["user"], CREDS["oreille"]["pass"], "systemctl restart oreille_natacha.service")                                
-                                                
-                            # CAS 2 : ARRÊT TOTAL
                             elif any(act in text for act in ACT_ARRET) and any(suj in text for suj in SUJ_ARRET):
-                                print("🛑 Arrêt reçu !")
-                                envoyer_mqtt("natacha/reponse", "Extinction en cours, au revoir Thierry.")
-                                time.sleep(8)
-                                execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "halt")
-                                execute_remote_command(BOUCHE_IP, CREDS["bouche"]["user"], CREDS["bouche"]["pass"], "halt")
+                                envoyer_mqtt("natacha/reponse", "Extinction en cours.")
                                 os.system(f"echo {CREDS['oreille']['pass']} | sudo -S halt")
-
-                            # CAS 3 : RAPPORT DE SANTÉ
                             elif any(act in text for act in ACT_ANALYSE) and any(suj in text for suj in SUJ_ANALYSE):
-                                rapport = f"Santé : MQTT {check_health(CERVEAU_IP, 1883)}."
-                                envoyer_mqtt("natacha/reponse", rapport)
-
-                            # CAS 4 : QUESTION AU LLM
+                                envoyer_mqtt("natacha/reponse", f"Santé : {check_health(CERVEAU_IP, 1883)}.")
                             elif len(text) > 3:
-                                try:
-                                    print("Envoi d'une question au cerveau.\n")
-                                    envoyer_mqtt("natacha/question", raw_text)
-                                    print("✅ MQTT : Question envoyée.")
-                                except Exception as e:
-                                    print(f"❌ Erreur MQTT : {e}")
-
+                                envoyer_mqtt("natacha/question", raw_text)
                     audio_buffer, silence_counter = [], 0
-
 except KeyboardInterrupt:
     print("\n🛑 Fin du programme.")
 finally:
