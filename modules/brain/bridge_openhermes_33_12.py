@@ -429,10 +429,15 @@ def traiter_question(question, client_mqtt):
         bloc_contexte += f"### DONNÉES DE RÉFÉRENCE (KIWIX) :\n{savoir_physique}\n--------------------------\n"
     if souvenirs_perso:
         bloc_contexte += f"### SOUVENIRS PERSONNELS (CHROMA) :\n{souvenirs_perso}\n--------------------------\n"
+    bloc_visuel = ""
+    if OEIL_ACTIF:
+        statut_visuel = f"Thierry est devant son établi, il porte un vêtement {oeil_veste} et semble {oeil_emotion}." if oeil_statut == "present" else "Thierry est absent de son établi."
+        bloc_visuel = f"ÉTAT VISUEL : {statut_visuel}\n"      
 
 # Construction finale épurée (v33.12as)
     prompt = (
         f"SYSTEME : Tu es Natacha, assistante IA experte. Nous sommes le {h_str}.\n"
+        f"{bloc_visuel}"
         "NOTE TECHNIQUE : ChromaDB est ta base de mémoire sémantique contenant les SEULS faits réels sur Thierry.\n\n"
         f"{bloc_contexte}"
         "### INSTRUCTIONS STRICTES DE VÉRITÉ :\n"
