@@ -53,7 +53,7 @@ def forcer_audio_systeme():
             os.system("amixer sset Master unmute > /dev/null 2>&1")
             os.system("amixer sset Master 50% > /dev/null 2>&1")
             
-            # Cas spécifique HDMI (ton cas sur le Ryzen)
+            # Cas spécifique HDMI
             os.system("amixer -c 0 sset IEC958 on > /dev/null 2>&1")
             os.system("amixer -c 0 sset IEC958,1 on > /dev/null 2>&1")
             print("🔊 Failsafe : ALSA/HDMI démueté via amixer.")
