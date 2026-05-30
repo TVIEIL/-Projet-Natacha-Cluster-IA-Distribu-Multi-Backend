@@ -114,6 +114,7 @@ URL_SLOTS = URL_SERVEUR.replace("/v1/chat/completions", "/slots/0?action=release
 
 TOPIC_QUESTION, TOPIC_REPONSE = "natacha/question", "natacha/reponse"
 TOPIC_APPRENDRE, TOPIC_RAZ = "natacha/apprendre", "natacha/raz_memoire"
+TOPIC_OEIL_DETECTION = "natacha/oeil_detection"
 
 # File d'attente pour les questions
 file_questions = queue.Queue(maxsize=10)
