@@ -33,7 +33,6 @@
 
 
 
-
 import os, time, subprocess, paramiko, pyaudio, socket, numpy as np
 import paho.mqtt.client as mqtt
 from paho.mqtt.enums import CallbackAPIVersion
@@ -42,6 +41,9 @@ from dotenv import load_dotenv
 from pathlib import Path
 import sys
 from contextlib import contextmanager
+
+os.environ['PYTHONUNBUFFERED'] = '1'
+os.environ['AUDIODEV'] = 'hw:4' 
 
 # On trouve le chemin du script lui-même
 base_path = Path(__file__).resolve().parent
@@ -79,10 +81,14 @@ def ignore_stderr():
 
 def connecter_mqtt():
     try:
+        print(f"🔗 Tentative de connexion au broker MQTT : {CERVEAU_IP}...")
         mqtt_client.connect(CERVEAU_IP, 1883, keepalive=60)
         mqtt_client.loop_start() 
+        print("✅ Connexion MQTT établie avec succès.")
         return True
-    except: return False
+    except Exception as e:
+        print(f"❌ Erreur de connexion MQTT vers {CERVEAU_IP} : {e}")
+        return False
 
 def get_hw_index_by_usb_id(target_usb_id):
     """ Recherche via l'ID matériel pour garantir la stabilité """
@@ -101,8 +107,11 @@ def get_hw_index_by_usb_id(target_usb_id):
 
 def envoyer_mqtt(topic, message):
     if mqtt_client.is_connected():
-        mqtt_client.publish(topic, message)
-    else: print(f"🚫 Offline - {topic} : {message}")
+        result = mqtt_client.publish(topic, message)
+        print(f"✅ MQTT Sent to {topic}: {result.rc == mqtt.MQTT_ERR_SUCCESS}")
+    else:
+        print(f"🚫 Offline - Tentative de reconnexion...")
+        connecter_mqtt()
 
 def execute_remote_command(ip, user, password, command):
     try:
@@ -195,3 +204,4 @@ finally:
     if 'stream' in locals():
         stream.close()
     p.terminate()
+
