@@ -48,6 +48,8 @@ os.environ['AUDIODEV'] = 'hw:4'
 # On trouve le chemin du script lui-même
 base_path = Path(__file__).resolve().parent
 env_path = base_path / ".env"
+reussite_question = False
+reussite_statut = False
 
 # On charge le .env
 load_dotenv(dotenv_path=env_path)
@@ -105,13 +107,26 @@ def get_hw_index_by_usb_id(target_usb_id):
     p.terminate()
     return 4 
 
+        
 def envoyer_mqtt(topic, message):
     if mqtt_client.is_connected():
-        result = mqtt_client.publish(topic, message)
-        print(f"✅ MQTT Sent to {topic}: {result.rc == mqtt.MQTT_ERR_SUCCESS}")
+        # publish() retourne un objet MQTTMessageInfo
+        result = mqtt_client.publish(topic, message, qos=1, retain=False)
+        
+        # rc == 0 signifie MQTT_ERR_SUCCESS
+        success = (result.rc == mqtt.MQTT_ERR_SUCCESS)
+        
+        if success:
+            print(f"✅ MQTT Sent to {topic}: {message}")
+            return True
+        else:
+            print(f"❌ MQTT Publish failed with error code: {result.rc}")
+            return False
     else:
         print(f"🚫 Offline - Tentative de reconnexion...")
         connecter_mqtt()
+        # On retourne False car l'envoi a échoué à cause de la déconnexion
+        return False
 
 def execute_remote_command(ip, user, password, command):
     try:
@@ -187,16 +202,26 @@ try:
                         print(f"✨ Entendu : {raw_text}")
                         if any(nom in text for nom in KEYWORDS_NOM):
                             if any(act in text for act in ACT_RELANCE) and any(suj in text for suj in SUJ_RELANCE):
-                                envoyer_mqtt("natacha/reponse", "Relance Natacha en cours.")
                                 time.sleep(8)
                                 execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl restart natacha-brain.service")
                             elif any(act in text for act in ACT_ARRET) and any(suj in text for suj in SUJ_ARRET):
-                                envoyer_mqtt("natacha/reponse", "Extinction en cours.")
+                                reussite_question = envoyer_mqtt("natacha/reponse", "Extinction en cours.")
                                 os.system(f"echo {CREDS['oreille']['pass']} | sudo -S halt")
                             elif any(act in text for act in ACT_ANALYSE) and any(suj in text for suj in SUJ_ANALYSE):
-                                envoyer_mqtt("natacha/reponse", f"Santé : {check_health(CERVEAU_IP, 1883)}.")
+                                reussite_question = envoyer_mqtt("natacha/reponse", f"Le serveur de communication  mosquitto est  {check_health(CERVEAU_IP, 1883)}.")
                             elif len(text) > 3:
-                                envoyer_mqtt("natacha/question", raw_text)
+                                # On réaffecte ici, cela garantit que tu testes le résultat de l'envoi présent
+                                reussite_question = envoyer_mqtt("natacha/question", raw_text) 
+
+                                if reussite_question:
+                                    reussite_statut = envoyer_mqtt("natacha/status", "traitement en cours")
+                                    time.sleep(5)
+                                    if reussite_statut:
+                                        print("✅ Question transmise et statut 'traitement en cours' activé.")
+                                    else:
+                                        print("⚠️ Question envoyée, mais échec de transmission du statut.")
+                                else:
+                                    print("❌ Échec de l'envoi de la question.")
                     audio_buffer, silence_counter = [], 0
 except KeyboardInterrupt:
     print("\n🛑 Fin du programme.")
