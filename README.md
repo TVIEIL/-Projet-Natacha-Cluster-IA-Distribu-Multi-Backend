@@ -364,6 +364,21 @@ sudo loginctl enable-linger $USER
 &nbsp;
 </br>
 
+###📝 Configuration des privilèges (Sudoers)
+
+Pour permettre au système de maintenance de Natacha (scripts Python de redémarrage distant) de fonctionner sans interaction humaine, chaque machine (Cerveau, Bouche, etc.) doit autoriser l'exécution de commandes système spécifiques sans demande de mot de passe.
+
+```
+sudo visudo
+```
+
+Aller à la fin du fichier et ajouter  : </br>
+nom_de_votre_utilisateur ALL=(ALL) NOPASSWD: ALL
+
+
+&nbsp;
+</br>
+
 # 🧠 Le Cerveau (Nœud Central : Core i5)
 
 
