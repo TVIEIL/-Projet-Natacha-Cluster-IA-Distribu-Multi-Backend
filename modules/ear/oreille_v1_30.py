@@ -83,13 +83,13 @@ def ignore_stderr():
 
 def connecter_mqtt():
     try:
-        print(f"🔗 Tentative de connexion au broker MQTT : {CERVEAU_IP}...")
-        mqtt_client.connect(CERVEAU_IP, 1883, keepalive=60)
+        print(f"🔗 Tentative de connexion au broker MQTT : {MQTT_IP}...")
+        mqtt_client.connect(MQTT_IP, 1883, keepalive=60)
         mqtt_client.loop_start() 
         print("✅ Connexion MQTT établie avec succès.")
         return True
     except Exception as e:
-        print(f"❌ Erreur de connexion MQTT vers {CERVEAU_IP} : {e}")
+        print(f"❌ Erreur de connexion MQTT vers {MQTT_IP} : {e}")
         return False
 
 def get_hw_index_by_usb_id(target_usb_id):
