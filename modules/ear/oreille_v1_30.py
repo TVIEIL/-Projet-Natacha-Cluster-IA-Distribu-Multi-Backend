@@ -226,9 +226,8 @@ try:
                                 time.sleep(5)
                                 os.system(f"echo {CREDS['oreille']['pass']} | sudo -S halt")
                             elif any(act in text for act in ACT_ANALYSE) and any(suj in text for suj in SUJ_ANALYSE):
-                                reussite_question = envoyer_mqtt("natacha/reponse", f"Le serveur de communication  mosquitto est  {check_health(CERVEAU_IP, 1883)}.")
+                                reussite_question = envoyer_mqtt("natacha/reponse", f"Le serveur de communication  mosquitto est  {check_health(MQTT_IP, 1883)}.")
                             elif len(text) > 3:
-                                # On réaffecte ici, cela garantit que tu testes le résultat de l'envoi présent
                                 reussite_question = envoyer_mqtt("natacha/question", raw_text) 
 
                                 if reussite_question:
