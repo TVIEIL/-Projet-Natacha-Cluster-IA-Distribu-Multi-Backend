@@ -218,6 +218,12 @@ try:
                                 time.sleep(8)
                             elif any(act in text for act in ACT_ARRET) and any(suj in text for suj in SUJ_ARRET):
                                 reussite_question = envoyer_mqtt("natacha/reponse", "Extinction en cours.")
+                                execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "sudo -S halt")
+                                time.sleep(5)
+                                execute_remote_command(BOUCHE_IP, CREDS["bouche"]["user"], CREDS["bouche"]["pass"], "sudo -S halt")
+                                time.sleep(5)
+                                execute_remote_command(MQTT_IP, CREDS["mqtt"]["user"], CREDS["mqtt"]["pass"], "sudo -S halt")
+                                time.sleep(5)
                                 os.system(f"echo {CREDS['oreille']['pass']} | sudo -S halt")
                             elif any(act in text for act in ACT_ANALYSE) and any(suj in text for suj in SUJ_ANALYSE):
                                 reussite_question = envoyer_mqtt("natacha/reponse", f"Le serveur de communication  mosquitto est  {check_health(CERVEAU_IP, 1883)}.")
