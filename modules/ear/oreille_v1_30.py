@@ -203,7 +203,19 @@ try:
                         if any(nom in text for nom in KEYWORDS_NOM):
                             if any(act in text for act in ACT_RELANCE) and any(suj in text for suj in SUJ_RELANCE):
                                 time.sleep(8)
-                                execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl restart natacha-brain.service")
+                                cmd1 = "XDG_RUNTIME_DIR=/run/user/$(id -u) systemctl --user restart natacha-brain.service"
+                                execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], cmd1)
+                                time.sleep(8)
+                                execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl --user restart cerveau_natacha.service")
+                                time.sleep(8)
+                                execute_remote_command(BOUCHE_IP, CREDS["bouche"]["user"], CREDS["bouche"]["pass"], "systemctl --user restart bouche_natacha.service")
+                                time.sleep(8)
+                                execute_remote_command(MQTT_IP, CREDS["mqtt"]["user"], CREDS["mqtt"]["pass"], "sudo /usr/bin/docker-compose -f /home/vieil/mqtt/docker-compose.yml restart")
+                                time.sleep(8)
+                                os.system(f"echo {CREDS['oreille']['pass']} | sudo systemctl  restart gstream_natacha.service")
+                                time.sleep(8)
+                                os.system(f"echo {CREDS['oreille']['pass']} | systemctl --user restart oreille_natacha.service")
+                                time.sleep(8)
                             elif any(act in text for act in ACT_ARRET) and any(suj in text for suj in SUJ_ARRET):
                                 reussite_question = envoyer_mqtt("natacha/reponse", "Extinction en cours.")
                                 os.system(f"echo {CREDS['oreille']['pass']} | sudo -S halt")
