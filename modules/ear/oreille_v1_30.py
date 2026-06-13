@@ -56,7 +56,7 @@ load_dotenv(dotenv_path=env_path)
 
 # --- IMPORT DES SECRETS ---
 try:
-    from secrets_natacha import CREDS, OREILLE_IP, CERVEAU_IP, BOUCHE_IP
+    from secrets_natacha import CREDS, OREILLE_IP, CERVEAU_IP, BOUCHE_IP, MQTT_IP
 except ImportError:
     print("❌ Erreur : Le fichier secrets_natacha.py est manquant !")
     exit(1)
