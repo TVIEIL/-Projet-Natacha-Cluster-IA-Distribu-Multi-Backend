@@ -439,7 +439,7 @@ Création du fichier de service natacha-brain.service
 </br>
 Code du service :
 ```
-cat << EOF > ~/.config/systemd/user/cerveau_natacha.service
+cat << EOF > ~/.config/systemd/user/natacha-brain.service
 [Unit]
 Description=Cerveau de Natacha - Serveur Llama.cpp
 After=network.target
@@ -455,7 +455,7 @@ ExecStart=/home/$USER/llama.cpp/build/bin/llama-server \\
     --flash-attn on \\
     --mlock \\
     --host 127.0.0.1 \\
-    --port 8080
+    --port 8000
 
 Restart=always
 RestartSec=10
