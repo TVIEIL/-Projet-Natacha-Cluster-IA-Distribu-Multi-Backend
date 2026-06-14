@@ -146,7 +146,7 @@ def execute_remote_command(ip, user, password, command):
     try:
 
         ssh.connect(ip, username=user, password=password, timeout=10)
-        stdin, stdout, stderr = ssh.exec_command(f"echo {password} | sudo -S {command}")
+        stdin, stdout, stderr = ssh.exec_command(f"echo {password} | sudo -S -E {command}")
         
         exit_status = stdout.channel.recv_exit_status()
         error_msg = stderr.read().decode().strip()
