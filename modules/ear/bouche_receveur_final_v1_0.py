@@ -33,63 +33,61 @@ import threading
 import shutil 
 import time
 
+#!/usr/bin/env python3
+import subprocess
+import sys
+import os
+from dotenv import load_dotenv
+import re
+import time
+import shutil
 
-def forcer_audio_systeme():
-    """ 
-    Failsafe : Tente de démueter le son via PulseAudio (Desktop) 
-    ou via AMIXER (Server pur).
-    """
-    try:
-        time.sleep(2)
-        
-        # --- CAS 1 : Système avec PulseAudio (Ubuntu Desktop) ---
-        if shutil.which("pactl"):
-            os.system("pactl set-sink-mute @DEFAULT_SINK@ false > /dev/null 2>&1")
-            os.system("pactl set-sink-volume @DEFAULT_SINK@ 50% > /dev/null 2>&1")
-            print("🔊 Failsafe : PulseAudio démueté (50%).")
-
-        # --- CAS 2 : Système Server pur (ALSA direct) ---
-        if shutil.which("amixer"):
-            os.system("amixer sset Master unmute > /dev/null 2>&1")
-            os.system("amixer sset Master 50% > /dev/null 2>&1")
-            
-            # Cas spécifique HDMI
-            os.system("amixer -c 0 sset IEC958 on > /dev/null 2>&1")
-            os.system("amixer -c 0 sset IEC958,1 on > /dev/null 2>&1")
-            print("🔊 Failsafe : ALSA/HDMI démueté via amixer.")
-
-    except Exception as e:
-        pass
-
-# Lancement du gardien en arrière-plan
-thread_son = threading.Thread(target=forcer_audio_systeme, daemon=True)
-thread_son.start()
-
-# --- RÉGLAGE DU VOLUME ---
-NIVEAU_SONORE = 0.5
-
-# --- CHARGEMENT DE LA CONFIGURATION ---
+# --- CHARGEMENT CONFIG ---
 load_dotenv()
+SPEAKER_ID = os.getenv("SPEAKER_USB_ID") # Ex: 0132:3232
 
-# --- CONFIGURATION DU FLUX ---
+def get_alsa_card_num(vid_pid):
+    """
+    Résout le numéro de carte ALSA (ex: 3) à partir du PID:VID.
+    """
+    if not vid_pid:
+        return None
+        
+    search_component = f"USB{vid_pid}".upper()
+    try:
+        pactl_out = subprocess.check_output(["pactl", "list", "cards"], text=True)
+        # Découpe par carte pour isoler les infos
+        blocks = re.split(r'(?:Carte|Card) #', pactl_out)
+        
+        for block in blocks:
+            if search_component in block:
+                match = re.search(r'alsa\.card = "(\d+)"', block)
+                if match:
+                    return match.group(1) # Retourne le numéro de carte (ex: "3")
+        return None
+    except Exception:
+        return None
+
+# --- RÉSOLUTION DYNAMIQUE ---
+card_num = get_alsa_card_num(SPEAKER_ID)
+
+if card_num:
+    # On force GStreamer à utiliser la carte précise. 
+    # hw:{card_num} pointe directement vers l'interface ALSA de la carte
+    SINK = f"alsasink device=hw:{card_num}"
+    print(f"✅ Sortie forcée sur matériel ID {SPEAKER_ID} (ALSA card {card_num})")
+else:
+    SINK = "pulsesink"
+    print("⚠️ ID matériel non résolu, repli sur pulsesink.")
+
+# --- CONFIGURATION (inchangée) ---
+NIVEAU_SONORE = 0.5
 STREAM_RATE = 22050 
 PORT_UDP = 5000
 CHANNELS = 1
 FORMAT = "S16LE"
 
-# --- CONFIGURATION DE SORTIE (Modification ciblée VID:PID) ---
-HW_RATE = int(os.getenv("AUDIO_SAMPLE_RATE", 48000))
-SPEAKER_ID = os.getenv("SPEAKER_USB_ID") # Utilisation du nouvel identifiant .env
-
-# On injecte l'ID matériel dans le pipeline si disponible
-if SPEAKER_ID:
-    # On force GStreamer à utiliser la carte correspondant à cet ID
-    SINK = f"alsasink device=hw:CARD=DONGLE" # Utilisation de l'ID via le mapping matériel
-    print(f"✅ Sortie forcée sur le matériel ID : {SPEAKER_ID}")
-else:
-    SINK = "pulsesink"
-    print("⚠️ ID matériel non trouvé dans le .env, repli sur pulsesink.")
-
+# Pipeline GStreamer
 pipeline = (
     f'gst-launch-1.0 udpsrc port={PORT_UDP} buffer-size=524288 ! '
     f'"audio/x-raw,rate={STREAM_RATE},channels={CHANNELS},format={FORMAT},layout=interleaved" ! '
@@ -103,10 +101,13 @@ pipeline = (
 )
 
 print(f"---")
-print(f"✅ Receveur Natacha v1.0 (Mode Résilient) ...")
-print(f"📡 Réception réseau : {STREAM_RATE} Hz")
-print(f"🔊 Sortie matérielle (via .env) : {HW_RATE} Hz")
+print(f"✅ Receveur Natacha v1.1 (Résolu matériellement) ...")
+print(f"🔊 Sortie : {SINK}")
 print(f"---")
+
+# Note : J'ai retiré le thread 'forcer_audio_systeme' ici 
+# car si tu utilises alsasink device=hw:X, tu bypasses PulseAudio/ALSA Mixers.
+# C'est donc plus propre et plus rapide.
 
 try:
     subprocess.run(pipeline, shell=True)
