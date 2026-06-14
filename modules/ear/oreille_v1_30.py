@@ -41,6 +41,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 import sys
 from contextlib import contextmanager
+import datetime
 
 os.environ['PYTHONUNBUFFERED'] = '1'
 os.environ['AUDIODEV'] = 'hw:4' 
@@ -68,6 +69,16 @@ CHANNELS = 2
 CHUNK = int(MIC_RATE / 10)
 SILENCE_THRESHOLD = 0.005
 MAX_SILENCE_CHUNKS = 25
+
+def log_action(message):
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log_line = f"[{timestamp}] {message}\n"
+
+    log_path = os.path.expanduser("~/Natacha-Project/modules/ear/maintenance.log")
+    with open(log_path, "a") as f:
+        f.write(log_line)
+        f.flush()
+        os.fsync(f.fileno())
 
 @contextmanager
 def ignore_stderr():
@@ -129,14 +140,31 @@ def envoyer_mqtt(topic, message):
         return False
 
 def execute_remote_command(ip, user, password, command):
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    
     try:
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(ip, username=user, password=password, timeout=5)
-        ssh.exec_command(f"echo {password} | sudo -S {command}")
+
+        ssh.connect(ip, username=user, password=password, timeout=10)
+        stdin, stdout, stderr = ssh.exec_command(f"echo {password} | sudo -S {command}")
+        
+        exit_status = stdout.channel.recv_exit_status()
+        error_msg = stderr.read().decode().strip()
+        
+        if exit_status == 0:
+            msg = f"SUCCESS sur {ip} : {command}"
+            log_action(msg)
+            return True, msg
+        else:
+            msg = f"ERREUR sur {ip} ({command}) : {error_msg}"
+            log_action(msg)
+            return False, msg
+            
+    except Exception as e:
+        return False, str(e)
+    finally:
         ssh.close()
-        return True
-    except: return False
+
 
 def check_health(ip, port):
     target_ip = "127.0.0.1" if ip == OREILLE_IP else ip
@@ -202,28 +230,56 @@ try:
                         print(f"✨ Entendu : {raw_text}")
                         if any(nom in text for nom in KEYWORDS_NOM):
                             if any(act in text for act in ACT_RELANCE) and any(suj in text for suj in SUJ_RELANCE):
+                                
+                                cmd1 = f"/home/{CREDS['cerveau']['user']}/Natacha-Project/modules/brain/restart_brain.sh"
+                                success, message = execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], cmd1)
                                 time.sleep(8)
-                                cmd1 = "XDG_RUNTIME_DIR=/run/user/$(id -u) systemctl --user restart natacha-brain.service"
-                                execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], cmd1)
+                                if not success:
+                                    print(f"ÉCHEC de l'arrêt de  llama-server  et/ou  de   bridge_openhermes_33_12.py  : {message}")
+                                else:
+                                    print("Ordre de l'arrêt de  llama-server  et  de   bridge_openhermes_33_12.py   effectué avec succès. Le redémarrage automatique  va bientôt commencer.")
+                                                              
+                                success, message = execute_remote_command(BOUCHE_IP, CREDS["bouche"]["user"], CREDS["bouche"]["pass"], "systemctl --user restart bouche_natacha.service")
                                 time.sleep(8)
-                                execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "systemctl --user restart cerveau_natacha.service")
+                                if not success:
+                                    print(f"ÉCHEC de redémarrage de  bouche_natacha.service  : {message}")
+                                else:
+                                    print("Ordre de redémarrage de  bouche_natacha.service  effectué avec succès.")
+                                    
+                                success, message = execute_remote_command(MQTT_IP, CREDS["mqtt"]["user"], CREDS["mqtt"]["pass"], "sudo /usr/bin/docker-compose -f /home/vieil/mqtt/docker-compose.yml restart")
                                 time.sleep(8)
-                                execute_remote_command(BOUCHE_IP, CREDS["bouche"]["user"], CREDS["bouche"]["pass"], "systemctl --user restart bouche_natacha.service")
-                                time.sleep(8)
-                                execute_remote_command(MQTT_IP, CREDS["mqtt"]["user"], CREDS["mqtt"]["pass"], "sudo /usr/bin/docker-compose -f /home/vieil/mqtt/docker-compose.yml restart")
-                                time.sleep(8)
+                                if not success:
+                                    print(f"ÉCHEC de redémarrage sur le serveur MQTT de  docker-compose  : {message}")
+                                else:
+                                    print("Ordre de redémarrage  sur le serveur MQTT de  docker-compose   effectué avec succès.")
+                                    
                                 os.system(f"echo {CREDS['oreille']['pass']} | sudo systemctl  restart gstream_natacha.service")
                                 time.sleep(8)
                                 os.system(f"echo {CREDS['oreille']['pass']} | systemctl --user restart oreille_natacha.service")
                                 time.sleep(8)
                             elif any(act in text for act in ACT_ARRET) and any(suj in text for suj in SUJ_ARRET):
                                 reussite_question = envoyer_mqtt("natacha/reponse", "Extinction en cours.")
-                                execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "sudo -S halt")
+                                success, message = execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], "sudo -S halt")
                                 time.sleep(5)
-                                execute_remote_command(BOUCHE_IP, CREDS["bouche"]["user"], CREDS["bouche"]["pass"], "sudo -S halt")
+                                if not success:
+                                    print(f"ÉCHEC d'extinction du Cerveau : {message}")
+                                else:
+                                    print("Ordre d'extinction du cerveau  envoyé avec succès.")
+
+                                success, message = execute_remote_command(BOUCHE_IP, CREDS["bouche"]["user"], CREDS["bouche"]["pass"], "sudo -S halt")
                                 time.sleep(5)
-                                execute_remote_command(MQTT_IP, CREDS["mqtt"]["user"], CREDS["mqtt"]["pass"], "sudo -S halt")
+                                if not success:
+                                    print(f"ÉCHEC d'extinction de la Bouche : {message}")
+                                else:
+                                    print("Ordre d'extinction de la bouche envoyé avec succès.")
+                                    
+                                success, message = execute_remote_command(MQTT_IP, CREDS["mqtt"]["user"], CREDS["mqtt"]["pass"], "sudo -S halt")
                                 time.sleep(5)
+                                if not success:
+                                    print(f"ÉCHEC d'extinction du serveur  MQTT : {message}")
+                                else:
+                                    print("Ordre d'extinction du  serveur MQTT envoyé avec succès.")
+                                    
                                 os.system(f"echo {CREDS['oreille']['pass']} | sudo -S halt")
                             elif any(act in text for act in ACT_ANALYSE) and any(suj in text for suj in SUJ_ANALYSE):
                                 reussite_question = envoyer_mqtt("natacha/reponse", f"Le serveur de communication  mosquitto est  {check_health(MQTT_IP, 1883)}.")
