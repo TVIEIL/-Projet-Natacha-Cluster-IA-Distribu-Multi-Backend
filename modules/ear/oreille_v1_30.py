@@ -31,8 +31,6 @@
 #   - Pilotage distant du cluster (Cerveau i5 / Bouche OPi 6+) via SSH & MQTT.
 # ==============================================================================
 
-
-
 import os, time, subprocess, paramiko, pyaudio, socket, numpy as np
 import paho.mqtt.client as mqtt
 from paho.mqtt.enums import CallbackAPIVersion
@@ -42,6 +40,9 @@ from pathlib import Path
 import sys
 from contextlib import contextmanager
 import datetime
+import re
+
+#MQTT_BROKER = "192.168.1.80"
 
 os.environ['PYTHONUNBUFFERED'] = '1'
 os.environ['AUDIODEV'] = 'hw:4' 
@@ -63,12 +64,70 @@ except ImportError:
     exit(1)
     
 # --- CONFIGURATION MATÉRIELLE ---
-MIC_USB_ID = os.getenv("MIC_USB_ID")
+#MIC_USB_ID = os.getenv("MIC_USB_ID")
+mic_id_raw = os.getenv("MIC_USB_ID")
 MIC_RATE = int(os.getenv("AUDIO_SAMPLE_RATE", 48000))
 CHANNELS = 2
 CHUNK = int(MIC_RATE / 10)
 SILENCE_THRESHOLD = 0.005
 MAX_SILENCE_CHUNKS = 25
+
+
+def get_pyaudio_index_by_pid_vid(vid_pid):
+    """
+    Résout l'index PyAudio à partir d'une chaîne "VID:PID".
+    Exemple : get_pyaudio_index_by_pid_vid("0132:3232")
+    """
+    if ":" not in vid_pid:
+        print(f"DEBUG: Format invalide pour MIC_USB_ID : {vid_pid}")
+        return None
+
+    vid, pid = vid_pid.split(':')
+    # On reconstruit la signature telle qu'elle apparaît dans 'alsa.components'
+    # Le format attendu est "USB" + VID + ":" + PID (en majuscules)
+    search_pattern = f"USB{vid}:{pid}".upper()
+    
+    try:
+        # 1. Récupération des cartes via pactl
+        # On utilise --format=text ou simplement le list par défaut
+        pactl_out = subprocess.check_output(["pactl", "list", "cards"], text=True)
+        
+        # Le séparateur entre les cartes est 'Carte #' (ou 'Card #' en anglais)
+        card_blocks = re.split(r'Carte #|Card #', pactl_out)
+        
+        card_num = None
+        for block in card_blocks:
+            if search_pattern in block:
+                # Extraction du numéro de carte ALSA
+                match = re.search(r'api\.alsa\.card = "(\d+)"', block)
+                if match:
+                    card_num = match.group(1)
+                    break
+        
+        if card_num is None:
+            print(f"DEBUG: Impossible de trouver la carte pour le composant {search_pattern}")
+            return None
+            
+        # 2. Mapping vers l'index PyAudio via la signature matérielle 'hw:X'
+        # On cherche la coordonnée 'hw:X'
+        target_hw = f"hw:{card_num}"
+        p = pyaudio.PyAudio()
+        found_index = None
+        
+        for i in range(p.get_device_count()):
+            dev_info = p.get_device_info_by_index(i)
+            # On vérifie que 'hw:X' est présent dans le nom du device
+            if target_hw in dev_info.get('name') and dev_info.get('maxInputChannels') > 0:
+                found_index = i
+                break
+        
+        p.terminate()
+        return found_index
+
+    except Exception as e:
+        print(f"DEBUG: Erreur lors de la résolution de l'index : {e}")
+        return None
+
 
 def log_action(message):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -103,20 +162,67 @@ def connecter_mqtt():
         print(f"❌ Erreur de connexion MQTT vers {MQTT_IP} : {e}")
         return False
 
-def get_hw_index_by_usb_id(target_usb_id):
-    """ Recherche via l'ID matériel pour garantir la stabilité """
-    try:
-        lsusb_out = subprocess.check_output("lsusb", shell=True).decode()
-        if target_usb_id not in lsusb_out:
-            return None
-    except:
-        return None
+
+def get_pyaudio_index_by_pid_vid(vid_pid):
+    """
+    Résolution robuste : on cherche le PID:VID, on extrait le numéro de carte, 
+    et on mappe vers l'index PyAudio.
+    """
+    search_component = f"USB{vid_pid}".upper()
     
-    p = pyaudio.PyAudio()
-    # On retourne l'index 4 par défaut car c'est celui validé par setup_audio.py
-    # Si besoin, on pourrait itérer pour confirmer
-    p.terminate()
-    return 4 
+    try:
+        # 1. On récupère la liste des cartes
+        pactl_out = subprocess.check_output(["pactl", "list", "cards"], text=True)
+        #print(pactl_out)
+        
+        # On découpe par bloc "Carte #" ou "Card #"
+        # Cela gère automatiquement les deux langues
+        blocks = re.split(r'(?:Carte|Card) #', pactl_out)
+        #print(blocks)
+        
+        print(search_component)
+        
+        card_num = None
+        for block in blocks:
+            # On vérifie si ce bloc contient bien notre identifiant
+            if search_component in block:
+                # On extrait proprement le numéro de carte présent dans CE bloc
+                match = re.search(r'alsa\.card = "(\d+)"', block)
+                if match:
+                    card_num = match.group(1)
+                    print(f"DEBUG: Carte trouvée pour {search_component} -> Card n°{card_num}")
+                    break
+        
+        if card_num is None:
+            print(f"FATAL: PID:VID {search_component} trouvé dans pactl mais aucun 'alsa.card' associé.")
+            return None
+            
+        # 2. Mapping vers PyAudio
+        target_hw = f"hw:{card_num}"
+        p = pyaudio.PyAudio()
+        
+        # --- AJOUTE CE BLOC ICI POUR DEBUG ---
+        print(f"--- DÉBUT SCAN PYAUDIO (recherche de {target_hw}) ---")
+        for i in range(p.get_device_count()):
+            dev = p.get_device_info_by_index(i)
+            print(f"Index {i} | Nom: '{dev.get('name')}'")
+        print("--- FIN SCAN ---")
+        # --------------------------------------
+        
+        for i in range(p.get_device_count()):
+            dev_info = p.get_device_info_by_index(i)
+            # On cherche hw:X,Y dans le nom
+            if target_hw in dev_info.get('name') and dev_info.get('maxInputChannels') > 0:
+                p.terminate()
+                print(f"DEBUG: Index PyAudio trouvé -> {i}")
+                return i
+        
+        p.terminate()
+        return None
+
+    except Exception as e:
+        print(f"DEBUG: Erreur lors de la résolution : {e}")
+        return None
 
         
 def envoyer_mqtt(topic, message):
@@ -146,7 +252,7 @@ def execute_remote_command(ip, user, password, command):
     try:
 
         ssh.connect(ip, username=user, password=password, timeout=10)
-        stdin, stdout, stderr = ssh.exec_command(f"echo {password} | sudo -S -E {command}")
+        stdin, stdout, stderr = ssh.exec_command(f"echo {password} | sudo -S -E  {command}")
         
         exit_status = stdout.channel.recv_exit_status()
         error_msg = stderr.read().decode().strip()
@@ -165,7 +271,6 @@ def execute_remote_command(ip, user, password, command):
     finally:
         ssh.close()
 
-
 def check_health(ip, port):
     target_ip = "127.0.0.1" if ip == OREILLE_IP else ip
     try:
@@ -180,15 +285,25 @@ def check_health(ip, port):
 mqtt_client = mqtt.Client(CallbackAPIVersion.VERSION2)
 connecter_mqtt()
 
-input_idx = get_hw_index_by_usb_id(MIC_USB_ID)
+input_idx = get_pyaudio_index_by_pid_vid(mic_id_raw)
+
 if input_idx is None:
-    print(f"❌ Erreur : Impossible de trouver le micro avec ID {MIC_USB_ID}")
-    sys.exit(1)
+    print("FATAL: Impossible de trouver l'index audio correspondant à", mic_id_raw)
+    exit(1)
+
+print(f"Index audio résolu avec succès : {input_idx}")
+
 
 print(f"📥 Chargement de Whisper Medium (Rate cible: {MIC_RATE} Hz)...")
 model = WhisperModel("medium", device="cpu", compute_type="int8", cpu_threads=12, num_workers=1)
 
 p = pyaudio.PyAudio()
+
+print(f"DEBUG: Tentative d'ouverture avec:")
+print(f"  - CHANNELS = {CHANNELS} (type: {type(CHANNELS)})")
+print(f"  - RATE = {MIC_RATE}")
+print(f"  - INDEX = {input_idx}")
+
 stream = p.open(format=pyaudio.paInt16, channels=CHANNELS, rate=MIC_RATE,
                 input=True, input_device_index=input_idx, frames_per_buffer=CHUNK)
 
@@ -230,7 +345,7 @@ try:
                         print(f"✨ Entendu : {raw_text}")
                         if any(nom in text for nom in KEYWORDS_NOM):
                             if any(act in text for act in ACT_RELANCE) and any(suj in text for suj in SUJ_RELANCE):
-                                
+
                                 cmd1 = f"/home/{CREDS['cerveau']['user']}/Natacha-Project/modules/brain/restart_brain.sh"
                                 success, message = execute_remote_command(CERVEAU_IP, CREDS["cerveau"]["user"], CREDS["cerveau"]["pass"], cmd1)
                                 time.sleep(8)
@@ -239,12 +354,12 @@ try:
                                 else:
                                     print("Ordre de l'arrêt de  llama-server  et  de   bridge_openhermes_33_12.py   effectué avec succès. Le redémarrage automatique  va bientôt commencer.")
                                                               
-                                success, message = execute_remote_command(BOUCHE_IP, CREDS["bouche"]["user"], CREDS["bouche"]["pass"], "systemctl --user restart natachamouth.service")  #Nom du service  NatachMouth XTTS V2
+                                success, message = execute_remote_command(BOUCHE_IP, CREDS["bouche"]["user"], CREDS["bouche"]["pass"], "systemctl  restart natachamouth.service")
                                 time.sleep(8)
                                 if not success:
                                     print(f"ÉCHEC de redémarrage de  natachamouth.service  : {message}")
                                 else:
-                                    print("Ordre de redémarrage de  natachamouth.service  effectué avec succès.")
+                                    print("Ordre de redémarrage de  natachamouth.service effectué avec succès.")
                                     
                                 success, message = execute_remote_command(MQTT_IP, CREDS["mqtt"]["user"], CREDS["mqtt"]["pass"], "sudo /usr/bin/docker-compose -f /home/vieil/mqtt/docker-compose.yml restart")
                                 time.sleep(8)
@@ -284,6 +399,7 @@ try:
                             elif any(act in text for act in ACT_ANALYSE) and any(suj in text for suj in SUJ_ANALYSE):
                                 reussite_question = envoyer_mqtt("natacha/reponse", f"Le serveur de communication  mosquitto est  {check_health(MQTT_IP, 1883)}.")
                             elif len(text) > 3:
+                                # On réaffecte ici, cela garantit que tu testes le résultat de l'envoi présent
                                 reussite_question = envoyer_mqtt("natacha/question", raw_text) 
 
                                 if reussite_question:
@@ -302,4 +418,5 @@ finally:
     if 'stream' in locals():
         stream.close()
     p.terminate()
+
 
