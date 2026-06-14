@@ -43,14 +43,15 @@ CHUNK = 1024
 RECORD_SECONDS = 3
 
 
-# ***  forcer_profil_pro_audio() ***
+##  forcer_profil_pro_audio()       ##
+#########################
+
 # BUG propre à mon DONGLE USB 
 # il disparait de la liste des entrées 
 # pactl list cards short => ... 115    alsa_card.usb-Generic_USB_DONGLE_33202107269042-00    alsa ...
 # pactl list sources | grep -i "DONGLE" -A 5 => 
 # pactl list cards | grep -A 20 "115"  => output:iec958-ac3-surround-51: Sortie Surround numérique 5.1 (IEC958/AC3) (sorties : 1, sources : 0, priorité : 300, disponible : oui) 
-# le système le considère uniquement comme une sortie
-
+# le système le considère uniquement comme une entrée
 def forcer_profil_pro_audio():
     print("🔊 Forçage du profil 'pro-audio' sur le dongle...")
     # On utilise l'ID '115' ou le nom de la carte
@@ -95,18 +96,22 @@ def tuer_processus_fantomes():
     # On utilise la variable USER ici
     subprocess.run(f"pkill -u {USER} -f natacha", shell=True)
 
+import os
+
 def obtenir_usb_id(nom_peripherique):
-    """ Extrait juste le VID:PID à partir de lsusb """
+    # On cherche le mot clé DONGLE dans le nom du device
+    keyword = nom_peripherique
     try:
         lsusb_out = subprocess.check_output("lsusb", shell=True).decode()
-        mots = nom_peripherique.split()
-        for mot in mots:
-            if len(mot) > 3:
-                match = re.search(f"ID ([0-9a-fA-F]{{4}}:[0-9a-fA-F]{{4}}).*?{mot}", lsusb_out, re.IGNORECASE)
+        for line in lsusb_out.splitlines():
+            if keyword in line:
+                # La ligne ressemble à "Bus 001 Device 004: ID 0132:3232 Generic USB DONGLE"
+                # On cherche le pattern ID 1234:5678
+                match = re.search(r"ID ([0-9a-fA-F]{4}:[0-9a-fA-F]{4})", line)
                 if match:
                     return match.group(1)
         return "ID_INCONNU"
-    except Exception as e:
+    except:
         return "ID_ERREUR"
 
 def obtenir_peripheriques_valides():
@@ -243,12 +248,19 @@ if __name__ == "__main__":
             # 4. Test auditif et sauvegarde
             if test_echo(in_idx, out_idx, selected_rate):
                 if input("\nAvez-vous entendu votre voix correctement ? (o/n) : ").lower() == 'o':
-                    nom_in = p.get_device_info_by_index(in_idx).get('name')
-                    nom_out = p.get_device_info_by_index(out_idx).get('name')
+                    # e.g : "USB DONGLE: Audio (hw:3,0)"  
+                    nom_in = p.get_device_info_by_index(in_idx).get('name').split(':')[0]
+                    #nom_in = nom_in.split(':')[0]
+                    nom_out = p.get_device_info_by_index(out_idx).get('name').split(':')[0]
+                    #nom_out = nom_out.split(':')[0]
+                    
+                    # dans ce cas précis   nom_in = nom_out =  "USB DONGLE"
                 
                     print(f"\n💾 Mise à jour du fichier .env avec IDs matériels...")
-                    id_mic = obtenir_usb_id(p.get_device_info_by_index(in_idx).get('name'))
-                    id_spk = obtenir_usb_id(p.get_device_info_by_index(out_idx).get('name'))
+                    #id_mic = obtenir_usb_id(p.get_device_info_by_index(in_idx).get('name'))
+                    id_mic = obtenir_usb_id(nom_in)
+                    #id_spk = obtenir_usb_id(p.get_device_info_by_index(out_idx).get('name'))
+                    id_spk = obtenir_usb_id(nom_out)
                 
                     with open(".env", "w") as env_file:
                         env_file.write(f"MIC_USB_ID={id_mic}\n")
