@@ -239,12 +239,12 @@ try:
                                 else:
                                     print("Ordre de l'arrêt de  llama-server  et  de   bridge_openhermes_33_12.py   effectué avec succès. Le redémarrage automatique  va bientôt commencer.")
                                                               
-                                success, message = execute_remote_command(BOUCHE_IP, CREDS["bouche"]["user"], CREDS["bouche"]["pass"], "systemctl --user restart bouche_natacha.service")
+                                success, message = execute_remote_command(BOUCHE_IP, CREDS["bouche"]["user"], CREDS["bouche"]["pass"], "systemctl --user restart natachamouth.service")  #Nom du service  NatachMouth XTTS V2
                                 time.sleep(8)
                                 if not success:
-                                    print(f"ÉCHEC de redémarrage de  bouche_natacha.service  : {message}")
+                                    print(f"ÉCHEC de redémarrage de  natachamouth.service  : {message}")
                                 else:
-                                    print("Ordre de redémarrage de  bouche_natacha.service  effectué avec succès.")
+                                    print("Ordre de redémarrage de  natachamouth.service  effectué avec succès.")
                                     
                                 success, message = execute_remote_command(MQTT_IP, CREDS["mqtt"]["user"], CREDS["mqtt"]["pass"], "sudo /usr/bin/docker-compose -f /home/vieil/mqtt/docker-compose.yml restart")
                                 time.sleep(8)
