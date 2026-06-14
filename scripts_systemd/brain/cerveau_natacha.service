@@ -24,6 +24,7 @@ WorkingDirectory=/home/vieil/Natacha-Project/modules/brain
 # Lancement avec l'environnement Conda dédié
 ExecStart=/home/vieil/miniconda3/envs/cerveau_natacha/bin/python3 bridge_openhermes_33_12.py
 
+
 # Pour voir les logs en temps réel : journalctl --user -u cerveau_natacha -f
 Environment=PYTHONUNBUFFERED=1
 
