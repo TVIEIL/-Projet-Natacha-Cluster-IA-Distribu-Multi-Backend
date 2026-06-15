@@ -200,7 +200,7 @@ def get_pyaudio_index_by_pid_vid(vid_pid):
         target_hw = f"hw:{card_num}"
         p = pyaudio.PyAudio()
         
-        # --- AJOUTE CE BLOC ICI POUR DEBUG ---
+        # ---  BLOC POUR DEBUG p ---
         print(f"--- DÉBUT SCAN PYAUDIO (recherche de {target_hw}) ---")
         for i in range(p.get_device_count()):
             dev = p.get_device_info_by_index(i)
