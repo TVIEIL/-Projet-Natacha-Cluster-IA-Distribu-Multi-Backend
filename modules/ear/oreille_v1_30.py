@@ -42,7 +42,6 @@ from contextlib import contextmanager
 import datetime
 import re
 
-#MQTT_BROKER = "192.168.1.80"
 
 os.environ['PYTHONUNBUFFERED'] = '1'
 os.environ['AUDIODEV'] = 'hw:4' 
