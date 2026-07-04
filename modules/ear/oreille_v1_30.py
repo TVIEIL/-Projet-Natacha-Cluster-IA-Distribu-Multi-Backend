@@ -312,7 +312,7 @@ print(f"🎤 Natacha v1.30-SR (Rate: {MIC_RATE}Hz). Je t'écoute sur l'index {in
 audio_buffer = []
 silence_counter = 0
 
-KEYWORDS_NOM = ["natacha", "natasha", "natascha", "tante"]
+KEYWORDS_NOM = ["natacha", "natasha", "natascha", "matacha", "atacha"]
 ACT_ANALYSE = ["analyse", "diagnostic", "rapport", "santé", "statut", "état"]
 SUJ_ANALYSE = ["fonctionnement", "système", "marche", "opérationnel"]
 ACT_RELANCE = ["redémarrage", "relance", "relancer", "restart", "reboot"]
