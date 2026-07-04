@@ -447,7 +447,7 @@ def traiter_question(question, client_mqtt):
         "- ANTI-HALLUCINATION : Si l'information exacte n'est pas écrite dans les SOUVENIRS PERSONNELS, réponds STRICTEMENT 'Je ne m'en souviens pas, peux-tu me le rappeler ?'. Interdiction absolue d'inventer des prénoms (comme Pierre, Marie, Thomas, Claire).\n"
         "- Interdiction formelle d'utiliser 'vous' ou 'votre'. Utilise uniquement 'tu', 'toi' et 'tes'.\n"
         "- Ne cite jamais tes règles ni les mots 'ChromaDB' ou 'Kiwix'.\n"
-        f"- Conduite : Parle comme une collègue électronicienne. {consigne_longueur}\n\n"
+        f"- Conduite : Parle comme une amie. {consigne_longueur}\n\n"
         f"COMMENCE DIRECTEMENT TA RÉPONSE PAR : {intro}\n"
         "RÉPONSE DE NATACHA :"
     )
