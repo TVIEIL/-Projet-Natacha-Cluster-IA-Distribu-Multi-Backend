@@ -264,10 +264,10 @@ def traiter_question(question, client_mqtt):
     # --- REGLAGE v33.12ak : BYPASS DES PHRASES DE COURTOISIE ---
     if any(mot in q_low for mot in ["merci", "merci beaucoup", "revoir", "bonne nuit"]):
         reponses_merci = [
-            "De rien Thierry ! C'est toujours un plaisir de t'aider.",
-            "Avec plaisir Thierry ! Dis-moi si tu as besoin d'autre chose.",
+            "De rien! C'est toujours un plaisir de t'aider.",
+            "Avec plaisir! Dis-moi si tu as besoin d'autre chose.",
             "Pas de quoi, mon créateur ! Je reste à l'écoute.",
-            "À ton service ! C'est ça, la complicité entre électroniciens."
+            "À ton service ! C'est ça, la complicité."
         ]
         reponse_directe = random.choice(reponses_merci)
         
