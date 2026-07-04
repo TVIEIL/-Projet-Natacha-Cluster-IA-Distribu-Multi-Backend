@@ -33,14 +33,6 @@ import threading
 import shutil 
 import time
 
-#!/usr/bin/env python3
-import subprocess
-import sys
-import os
-from dotenv import load_dotenv
-import re
-import time
-import shutil
 
 # --- CHARGEMENT CONFIG ---
 load_dotenv()
@@ -53,7 +45,8 @@ def get_alsa_card_num(vid_pid):
     if not vid_pid:
         return None
         
-    search_component = f"USB{vid_pid}".upper()
+    #search_component = f"USB{vid_pid}".upper()
+    search_component = f"USB{vid_pid.lower()}"
     try:
         pactl_out = subprocess.check_output(["pactl", "list", "cards"], text=True)
         # Découpe par carte pour isoler les infos
