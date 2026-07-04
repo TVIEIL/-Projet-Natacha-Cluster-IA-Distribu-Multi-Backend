@@ -167,7 +167,8 @@ def get_pyaudio_index_by_pid_vid(vid_pid):
     Résolution robuste : on cherche le PID:VID, on extrait le numéro de carte, 
     et on mappe vers l'index PyAudio.
     """
-    search_component = f"USB{vid_pid}".upper()
+    #search_component = f"USB{vid_pid}".upper()
+    search_component = f"USB{vid_pid.lower()}"
     
     try:
         # 1. On récupère la liste des cartes
