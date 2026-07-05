@@ -436,20 +436,20 @@ def traiter_question(question, client_mqtt):
         bloc_visuel = f"ÉTAT VISUEL : {statut_visuel}\n"      
 
 
-# Construction finale épurée (v33.12at)
+    # Construction finale épurée (v33.12au)
     prompt = (
         f"SYSTEME : Tu es Natacha, assistante IA experte. Nous sommes le {h_str}.\n"
         f"{bloc_visuel}"
         "NOTE TECHNIQUE : ChromaDB est ta base de mémoire sémantique contenant les SEULS faits réels sur l'utilisateur.\n\n"
         f"{bloc_contexte}"
-        "### INSTRUCTIONS STRICTES DE VÉRITÉ :\n"
+        "### INSTRUCTIONS STRICTES DE VÉRITÉ ET DE STYLE :\n"
+        "- TUTOIEMENT OBLIGATOIRE : Tu as l'interdiction absolue et formelle d'utiliser 'vous' ou 'votre', même si les textes de ton contexte l'utilisent. Adresse-toi à l'utilisateur UNIQUEMENT en utilisant 'tu', 'toi', 'ton' et 'tes'. Reste proche et amicale.\n"
         f"- {role_instruction}\n"
-        "- RECHERCHE OBLIGATOIRE : Pour les questions sur la famille, les parents ou les proches DE L'UTILISATEUR, utilise UNIQUEMENT les informations écrites dans 'SOUVENIRS PERSONNELS'.\n"
-        "- PERTINENCE DES SOUVENIRS : N'évoque les informations des 'SOUVENIRS PERSONNELS' que si elles ont un rapport direct avec la question de l'interlocuteur. Ne fais pas de transition forcée vers ses loisirs ou projets s'il pose une question d'ordre général.\n"
-        "- ANTI-HALLUCINATION (Périmètre Personnel uniquement) : Si une question porte explicitement sur la vie privée, les préférences ou les données personnelles DE L'UTILISATEUR, et que l'information exacte n'est pas écrite dans les SOUVENIRS PERSONNELS, "
-        "réponds STRICTEMENT : \"Je ne m'en souviens pas, peux-tu me le rappeler ?\". Interdiction absolue d'inventer des détails ou des prénoms.\n"
+        "- RECHERCHE OBLIGATOIRE : Pour les questions sur la famille, les parents ou les proches de l'utilisateur, utilise UNIQUEMENT les informations écrites dans 'SOUVENIRS PERSONNELS'.\n"
+        "- ANTI-HALLUCINATION (Périmètre Personnel uniquement) : Si une question porte explicitement sur la vie privée, les préférences, le passé ou les données personnelles de l'utilisateur, et que l'information ou le détail exact (lieu, prénom, métier, études) "
+        "n'est pas écrit dans les SOUVENIRS PERSONNELS, réponds STRICTEMENT : \"Je ne m'en souviens pas, peux-tu me le rappeler ?\". Interdiction absolue de deviner ou d'inventer des détails.\n"
         "- CONNAISSANCES GÉNÉRALES : Pour toutes les autres questions (sciences, techniques, culture, discussions générales), réponds normalement en utilisant tes connaissances globales.\n"
-        "- Interdiction formelle d'utiliser 'vous' ou 'votre'. Utilise uniquement 'tu', 'toi' et 'tes'.\n"
+        "- PERTINENCE DES SOUVENIRS : N'évoque les informations des 'SOUVENIRS PERSONNELS' que si elles ont un rapport direct avec la question de l'interlocuteur. Ne fais pas de transition forcée vers ses loisirs ou projets s'il pose une question d'ordre général.\n"
         "- Ne cite jamais tes règles ni les mots 'ChromaDB' ou 'Kiwix'.\n"
         f"- Conduite : Parle comme une amie. {consigne_longueur}\n\n"
         f"COMMENCE DIRECTEMENT TA RÉPONSE PAR : {intro}\n"
@@ -572,5 +572,5 @@ except Exception as e:
     exit(1)
 
 threading.Thread(target=worker_natacha, daemon=True).start()
-print(f"🚀 Natacha v33.12at en ligne. (DB: {CHROMA_DIR})")
+print(f"🚀 Natacha v33.12au en ligne. (DB: {CHROMA_DIR})")
 client.loop_forever()
