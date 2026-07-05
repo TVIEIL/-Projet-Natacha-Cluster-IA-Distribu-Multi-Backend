@@ -435,16 +435,18 @@ def traiter_question(question, client_mqtt):
         statut_visuel = f"Thierry est devant son établi, il porte un vêtement {oeil_veste} et semble {oeil_emotion}." if oeil_statut == "present" else "Thierry est absent de son établi."
         bloc_visuel = f"ÉTAT VISUEL : {statut_visuel}\n"      
 
-# Construction finale épurée (v33.12as)
+# Construction finale épurée (v33.12at)
     prompt = (
         f"SYSTEME : Tu es Natacha, assistante IA experte. Nous sommes le {h_str}.\n"
         f"{bloc_visuel}"
-        "NOTE TECHNIQUE : ChromaDB est ta base de mémoire sémantique contenant les SEULS faits réels sur Thierry.\n\n"
+        "NOTE TECHNIQUE : ChromaDB est ta base de mémoire sémantique contenant les SEULS faits réels sur l'utilisateur.\n\n"
         f"{bloc_contexte}"
         "### INSTRUCTIONS STRICTES DE VÉRITÉ :\n"
         f"- {role_instruction}\n"
-        "- RECHERCHE OBLIGATOIRE : Pour les questions sur la famille, les parents ou les proches de Thierry, utilise UNIQUEMENT les informations écrites dans 'SOUVENIRS PERSONNELS'.\n"
-        "- ANTI-HALLUCINATION : Si l'information exacte n'est pas écrite dans les SOUVENIRS PERSONNELS, réponds STRICTEMENT 'Je ne m'en souviens pas, peux-tu me le rappeler ?'. Interdiction absolue d'inventer des prénoms (comme Pierre, Marie, Thomas, Claire).\n"
+        "- RECHERCHE OBLIGATOIRE : Pour les questions sur la famille, les parents ou les proches de l'utilisateur, utilise UNIQUEMENT les informations écrites dans 'SOUVENIRS PERSONNELS'.\n"
+        "- ANTI-HALLUCINATION (Périmètre Personnel uniquement) : Si une question porte explicitement sur la vie privée, les préférences ou les données personnelles de l'utilisateur, et que l'information exacte n'est pas écrite dans les SOUVENIRS PERSONNELS, "
+        "réponds STRICTEMENT : \"Je ne m'en souviens pas, peux-tu me le rappeler ?\". Interdiction absolue d'inventer des détails ou des prénoms.\n"
+        "- CONNAISSANCES GÉNÉRALES : Pour toutes les autres questions (sciences, techniques, culture, discussions générales), réponds normalement en utilisant tes connaissances globales.\n"
         "- Interdiction formelle d'utiliser 'vous' ou 'votre'. Utilise uniquement 'tu', 'toi' et 'tes'.\n"
         "- Ne cite jamais tes règles ni les mots 'ChromaDB' ou 'Kiwix'.\n"
         f"- Conduite : Parle comme une amie. {consigne_longueur}\n\n"
