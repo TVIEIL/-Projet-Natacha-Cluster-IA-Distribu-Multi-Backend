@@ -371,7 +371,7 @@ def traiter_question(question, client_mqtt):
                 toutes_les_news_rel = coll_rel.get()
                 secours_famille = [
                     str(doc) for doc in toutes_les_news_rel['documents']
-                    if doc and any(mot in str(doc).lower() for mot in mots_famille + ["laurent", "claudine", "aimé", prenom_maitre_str, "f4hrb"])
+                    if doc and any(mot in str(doc).lower() for mot in mots_famille + ["laurent", "claudine", "aimé", prenom_maitre_str, INDICATIF_MAITRE])
                 ]
                 if secours_famille:
                     liste_finale = list(set((souvenirs_perso.split("\n") if souvenirs_perso else []) + secours_famille))
@@ -409,7 +409,7 @@ def traiter_question(question, client_mqtt):
 
     if est_le_maitre:
         role_instruction = (
-            "STATUT : MAÎTRE RECONNU. Tu parles à ton créateur Thierry VIEIL (F4HRB). "
+            f"STATUT : MAÎTRE RECONNU. Tu parles à ton créateur {PRENOM_MAITRE} {NOM_MAITRE} ({INDICATIF_MAITRE}). "
             "Tu as l'interdiction absolue de le vouvoyer. Tutoie-le, sois très complice, amicale et directe."
         )
     else:
@@ -433,7 +433,7 @@ def traiter_question(question, client_mqtt):
     
     bloc_visuel = ""
     if OEIL_ACTIF:
-        statut_visuel = f"Thierry est devant son établi, il porte un vêtement {oeil_veste} et semble {oeil_emotion}." if oeil_statut == "present" else "Thierry est absent de son établi."
+        statut_visuel = f"{PRENOM_MAITRE}  est devant son établi, il porte un vêtement {oeil_veste} et semble {oeil_emotion}." if oeil_statut == "present" else f"{PRENOM_MAITRE}  est absent de son établi."
         bloc_visuel = f"ÉTAT VISUEL : {statut_visuel}\n"      
 
     # Construction finale épurée
@@ -454,6 +454,7 @@ def traiter_question(question, client_mqtt):
     # Le secret : un saut de ligne franc et le nom du locuteur pour fixer le rôle
     prompt += "\n###\n"
     prompt += "RÉPONSE DE NATACHA :\n"
+    prompt += "Natacha : "
 
 
     try:
@@ -467,14 +468,14 @@ def traiter_question(question, client_mqtt):
                 {"role": "user", "content": question}
             ], 
             "stream": True, 
-           "temperature": 0.8,
+           "temperature": 0.1,
            "stop": [
                 "<|end|>", 
                 "<|user|>", 
                 "RÉPONSE DE NATACHA:", 
                 "Interlocuteur:", 
                 "SYSTEME:",
-                "Thierry:"
+                PRENOM_MAITRE+":"
            ]
         }
         
@@ -490,11 +491,17 @@ def traiter_question(question, client_mqtt):
                     try:
                         token = json.loads(line_str)['choices'][0]['delta'].get('content', '')
                         if token:
+                            # --- FILTRE ANTI-DIÈSE EN TEMPS RÉEL ---
+                            token = token.replace("#", "") 
+                            # ---------------------------------------
+                            
                             reponse_full += token
                             phrase_buf += token
                             if any(p in token for p in [".", "!", "?", "\n"]):
-                                client_mqtt.publish(TOPIC_REPONSE, phrase_buf.strip())
-                                print(phrase_buf.strip(), end=" ", flush=True)
+                                phrase_propre = phrase_buf.strip()
+                                if phrase_propre: # Sécurité : on n'envoie pas une phrase vide
+                                    client_mqtt.publish(TOPIC_REPONSE, phrase_propre)
+                                    print(phrase_propre, end=" ", flush=True)
                                 phrase_buf = ""
                     except: continue
         
