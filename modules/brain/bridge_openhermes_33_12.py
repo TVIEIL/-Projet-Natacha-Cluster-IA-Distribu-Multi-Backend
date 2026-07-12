@@ -24,7 +24,7 @@
 # AUTEUR : Thierry VIEIL
 # DATE : 03 Mai 2026
 # ENVIRONNEMENT : Ubuntu / Python 3 (Cerveau Central)
-# MATÉRIEL : i5-14500 
+# MATÉRIEL : core ultra 9 
 # ==============================================================================
 
 import json, time, requests, chromadb, threading, re, locale
@@ -45,8 +45,10 @@ import time
 
 OEIL_ACTIF = False
 
-# 1. On définit ton identifiant "Secret" (tu peux le mettre dans ton .env)
+# 1. On définit un  identifiant "Secret" (on  pourrait  le mettre dans  .env)
 INDICATIF_MAITRE = "F4HRB"
+PRENOM_MAITRE ="Thierry"
+NOM_MAITRE ="Vieil"
 
 # ==============================================================================
 # 2. INITIALISATION ET SANTÉ
@@ -246,11 +248,9 @@ def extraire_connaissance_wiki(question):
 
 def traiter_question(question, client_mqtt):
     global KIWIX_OK
-    print(f"\nInterlocuteur : {question}")
+    print(f"\r\nInterlocuteur : {question}")
     print("  [Step 1] Début du traitement parallélisé...")
     
-    # 2. Dans ta fonction de construction du prompt
-    # Qui est l'interlocuteur?
     is_authenticated = verifier_identite(question)
     
     # --- 1. INITIALISATION DE TOUTES LES VARIABLES (Sécurité anti-crash) ---
@@ -266,7 +266,7 @@ def traiter_question(question, client_mqtt):
         reponses_merci = [
             "De rien! C'est toujours un plaisir de t'aider.",
             "Avec plaisir! Dis-moi si tu as besoin d'autre chose.",
-            "Pas de quoi, mon créateur ! Je reste à l'écoute.",
+            "Pas de quoi, mon ami ! Je reste à l'écoute.",
             "À ton service ! C'est ça, la complicité."
         ]
         reponse_directe = random.choice(reponses_merci)
@@ -275,8 +275,8 @@ def traiter_question(question, client_mqtt):
         client_mqtt.publish(TOPIC_REPONSE, reponse_directe)
         print(reponse_directe)
         print("\n\n  [Step 5] Réponse terminée (Bypass Courtoisie).\n")
-        return # On arrête la fonction ici, pas besoin d'envoyer au LLM !
-    
+        return 
+
     # Gestion des dates et de l'âge
     now = datetime.now()
     h_str = now.strftime("%A %d %B %Y à %Hh%M")
@@ -284,23 +284,28 @@ def traiter_question(question, client_mqtt):
     match_annee = re.search(r'\b(20[0-9]{2})\b', q_low)
     if match_annee: annee_cible = match_annee.group(1)
 
-# --- AJOUT : EXTRACTION PRÉCISE DE LA DATE ---
+    # --- EXTRACTION PRÉCISE DE LA DATE ---
     date_formatee = annee_cible
     mois_map = {
         "janvier": "01", "février": "02", "mars": "03", "avril": "04", "mai": "05", "juin": "06",
         "juillet": "07", "août": "08", "septembre": "09", "octobre": "10", "novembre": "11", "décembre": "12"
     }
     
-    # On cherche un motif type "14 mai" dans la question
     match_date = re.search(r'(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)', q_low)
     if match_date:
         jour = match_date.group(1).zfill(2)
         mois = mois_map.get(match_date.group(2))
-        date_formatee = f"{annee_cible}-{mois}-{jour}" # Résultat : "2026-05-14"
+        date_formatee = f"{annee_cible}-{mois}-{jour}"
 
     anniv_passe = (now.month > 12) or (now.month == 12 and now.day >= 3)
     age = (now.year - 1974) if anniv_passe else (now.year - 1974 - 1)
 
+    # --- 2. BRANCHEMENT DE L'ARBRE DE DÉCISION (Évite la surconsommation CPU) ---
+    prenom_maitre_str = str(PRENOM_MAITRE).lower() if PRENOM_MAITRE else "thierry"
+    est_le_maitre = is_authenticated or (prenom_maitre_str in q_low)
+    
+    # Filtres d'intention stricts
+    
     # Détection des intentions
     mots_save = ["enregistre", "mémorise", "souviens"]
     mots_news = ["nouvelles", "neuf", "actu", "actualité", "infos", "news", "2026", "passé"]
@@ -313,108 +318,96 @@ def traiter_question(question, client_mqtt):
     # Si c'est juste de la courtoisie, on ne force pas la recherche d'actus ou de wiki
     veut_chercher_news = (any(m in q_low for m in mots_news) or match_annee is not None) and not est_courtoisie
     veut_wiki = any(mot in q_low for mot in mots_cles_wiki) and not est_courtoisie
+    
+    mots_cles_perso = ["mon", "ma", "mes", "moi", "père", "maman", "frère", "famille", "indicatif", "métier", "boulot", "travail"]
+    est_question_perso = any(mot in q_low for mot in mots_cles_perso) or prenom_maitre_str in q_low
+    
+    est_courtoisie = any(mot in q_low for mot in ["bonjour", "salut", "ça va", "allo", "wesh"])
+    
+    mots_news = ["nouvelles", "neuf", "actu", "actualité", "infos", "news", "journal", "flash"]
+    # On n'active l'actu que si on la demande explicitement, et pas sur une simple date historique (ex: Nice 2016)
+    veut_memoriser = any(m in q_low for m in mots_save)
+    veut_chercher_news = any(m in q_low for m in mots_news) or ("aujourd'hui" in q_low and not est_courtoisie)
+    
+    mots_cles_wiki = ["physique", "tension", "kiwix", "wiki", "recherche", "qx", "fermi", "loi", "ohm", "ampere"]
+    veut_wiki = any(mot in q_low for mot in mots_cles_wiki) and not est_courtoisie
 
-    # --- 2. EXÉCUTION DES TÂCHES PARALLÈLES ---
+    # --- 3. EXÉCUTION DES TÂCHES PARALLÈLES FILTRÉES ---
     with ThreadPoolExecutor(max_workers=2) as executor:
-        futur_souvenirs = executor.submit(emb_fn, [question])
+        # On ne calcule l'embedding pour ChromaDB QUE si c'est nécessaire (Perso ou Actu)
+        futur_souvenirs = executor.submit(emb_fn, [question]) if (est_question_perso or veut_chercher_news) else None
         
         if KIWIX_OK and veut_wiki:
             print(f"  [Step 3] Lancement Kiwix pour : {question}")
             futur_wiki = executor.submit(extraire_connaissance_wiki, question)
 
-        try:
-            # Récupération de l'embedding pour Chroma
-            q_vec = futur_souvenirs.result(timeout=10)[0]
-            print("  [OK] Vecteur mémoire reçu.")
+        q_vec = None
+        if futur_souvenirs:
+            try:
+                q_vec = futur_souvenirs.result(timeout=10)[0]
+                print("  [OK] Vecteur mémoire généré.")
+            except Exception as e:
+                print(f"⚠️ Erreur Embedding : {e}")
 
-            # Récupération du savoir Kiwix si lancé
-            if futur_wiki:
+        if futur_wiki:
+            try:
                 savoir_physique = futur_wiki.result(timeout=15)
                 if savoir_physique:
                     print(f"  [OK] Savoir Kiwix reçu ({len(savoir_physique)} chars).\n")
-                    print(savoir_physique)
-                else:
-                    print("  [DEBUG] Kiwix n'a rien renvoyé.")
-        except Exception as e:
-            print(f"⚠️ Erreur lors de la synchro : {e}")
-            q_vec = None # Sécurité pour la suite
+            except Exception as e:
+                print(f"⚠️ Erreur Kiwix : {e}")
 
-
-    # --- 3. RÉCUPÉRATION DE LA MÉMOIRE (ChromaDB) ---
-    if q_vec is not None:
+    # --- 4. INTERROGATION SÉLECTIVE DE CHROMADB ---
+    # Recherche PERSO
+    if q_vec is not None and est_le_maitre and est_question_perso:
         try:
-            # Étage 1 : Recherche vectorielle classique dans les relations
             res_rel = coll_rel.query(query_embeddings=[q_vec], n_results=5)
             if res_rel['documents'] and res_rel['documents'][0]:
                 souvenirs_perso = "\n".join([str(d) for d in res_rel['documents'][0] if d])
             
-            # Étage 2 : Scan brut textuel (Bypass sémantique pour sécuriser la famille et l'identité)
+            # Scan brut textuel ciblé pour la famille
             mots_famille = ["frère", "frere", "mère", "mere", "père", "pere", "maman", "papa", "famille", "parents"]
-            if any(f in q_low for f in mots_famille) or "thierry" in q_low or "ind" in q_low:
+            if any(f in q_low for f in mots_famille) or prenom_maitre_str in q_low:
                 toutes_les_news_rel = coll_rel.get()
                 secours_famille = [
                     str(doc) for doc in toutes_les_news_rel['documents']
-                    if doc and any(mot in str(doc).lower() for mot in mots_famille or ["laurent", "claudine", "aimé", "thierry", "f4hrb"])
+                    if doc and any(mot in str(doc).lower() for mot in mots_famille + ["laurent", "claudine", "aimé", prenom_maitre_str, "f4hrb"])
                 ]
                 if secours_famille:
-                    # On fusionne le vectoriel et le textuel en éliminant les doublons
                     liste_finale = list(set((souvenirs_perso.split("\n") if souvenirs_perso else []) + secours_famille))
                     souvenirs_perso = "\n".join(liste_finale[:6])
-                    print(f"  [OK] {len(secours_famille)} souvenirs personnels/famille sécurisés par scan brut.")
+                    print(f"  [OK] {len(secours_famille)} souvenirs personnels sécurisés.")
         except Exception as e:
-            print(f"⚠️ Erreur lors de la récupération des souvenirs : {e}")
+            print(f"⚠️ Erreur Récupération Chroma Perso : {e}")
             
-        # Actualités : On passe en mode précision (v33.12am_clean)
-        if veut_chercher_news:
-            try:
-                res_exp = coll_exp.query(
-                    query_embeddings=[q_vec], 
-                    n_results=50,
-                    where_document={"$contains": f"ACTU {date_formatee}"}
-                )
+    # Recherche ACTUALITÉS
+    if q_vec is not None and veut_chercher_news:
+        try:
+            res_exp = coll_exp.query(query_embeddings=[q_vec], n_results=50, where_document={"$contains": f"ACTU {date_formatee}"})
+            brutes = [str(doc) for doc in res_exp['documents'][0] if doc] if res_exp['documents'] else []
+            
+            if not brutes: # Scan brut de secours
+                toutes_les_news = coll_exp.get()
+                brutes = [str(doc) for doc in toutes_les_news['documents'] if doc and date_formatee in str(doc)]
+            
+            actualites_filtrees = []
+            for doc in brutes[:5]:
+                txt_propre = html.unescape(doc).replace("«", '"').replace("»", '"').replace("’", "'").replace("&#160;", " ")
+                actualites_filtrees.append(txt_propre)
                 
-                if res_exp['documents'] and res_exp['documents'][0]:
-                    # --- NETTOYAGE RADICAL ANTI-CRASH ---
-                    brutes = [str(doc) for doc in res_exp['documents'][0] if doc]
-                    actualites_filtrees = []
-                    
-                    for doc in brutes[:5]: # On garde les 5 premières
-                        # 1. On décode les entités HTML résiduelles (les &#8230;)
-                        txt_propre = html.unescape(doc)
-                        # 2. On remplace les caractères exotiques qui font bugger le tokenizer
-                        txt_propre = txt_propre.replace("«", '"').replace("»", '"')
-                        txt_propre = txt_propre.replace("’", "'").replace("&#160;", " ")
-                        actualites_filtrees.append(txt_propre)
-                        
-                    contexte_actualites = "\n".join(actualites_filtrees)
-                    print(f"  [OK] {len(actualites_filtrees)} news nettoyées pour le {date_formatee}.")
-                else:
-                    # Sécurité Scan Brut (On applique le même nettoyage)
-                    toutes_les_news = coll_exp.get()
-                    brutes = [str(doc) for doc in toutes_les_news['documents'] if doc and date_formatee in str(doc)]
-                    actualites_filtrees = []
-                    for doc in brutes[:5]:
-                        txt_propre = html.unescape(doc).replace("«", '"').replace("»", '"').replace("’", "'")
-                        actualites_filtrees.append(txt_propre)
-                        
-                    contexte_actualites = "\n".join(actualites_filtrees)
-                    
-                    if actualites_filtrees:
-                        print(f"  [OK] {len(actualites_filtrees)} news récupérées par scan brut et nettoyées.")
-                    else:
-                        print(f"  [DEBUG] Aucune news dans Chroma pour la date : {date_formatee}")
-            except Exception as e:
-                print(f"⚠️ Erreur lors de la recherche d'actus : {e}")
+            contexte_actualites = "\n".join(actualites_filtrees)
+            if actualites_filtrees:
+                print(f"  [OK] {len(actualites_filtrees)} news prêtes pour le {date_formatee}.")
+        except Exception as e:
+            print(f"⚠️ Erreur Récupération Actus : {e}")
 
-
-    # --- 4. CONSTRUCTION DU PROMPT ET ENVOI LLM ---
-    # --- CONSTRUCTION DYNAMIQUE DU PROMPT (v33.12al_clean) ---
+    # --- 5. CONFIGURATION DU STYLE ET DU PROMPT ---
     intro = obtenir_intro_naturelle()
-    
     veut_detail = any(mot in q_low for mot in ["lit", "lis", "détaille", "explique", "wiki", "recherche", "trouve"])
-    consigne_longueur = "Développe largement ta réponse en citant les détails du livre." if veut_detail else "Sois concise et naturelle."
+    # Correction : "données de référence" à la place de "livre"
+    consigne_longueur = "Développe largement ta réponse en citant les détails des données de référence." if veut_detail else "Sois concise et naturelle."
 
-    if is_authenticated or "thierry" in q_low:
+    if est_le_maitre:
         role_instruction = (
             "STATUT : MAÎTRE RECONNU. Tu parles à ton créateur Thierry VIEIL (F4HRB). "
             "Tu as l'interdiction absolue de le vouvoyer. Tutoie-le, sois très complice, amicale et directe."
@@ -422,44 +415,68 @@ def traiter_question(question, client_mqtt):
     else:
         role_instruction = "Tu parles à un utilisateur. Tutoie-le obligatoirement. Sois décontractée."
 
-    # On assemble le bloc de contexte uniquement avec ce qui contient de l'info
+    # Assemblage des blocs de contexte
     bloc_contexte = ""
     if contexte_actualites:
         bloc_contexte += f"### ACTUALITÉS DU JOUR :\n{contexte_actualites}\n--------------------------\n"
+        
     if savoir_physique:
         bloc_contexte += f"### DONNÉES DE RÉFÉRENCE (KIWIX) :\n{savoir_physique}\n--------------------------\n"
-    if souvenirs_perso:
+        
+    if souvenirs_perso and est_le_maitre and est_question_perso:
         bloc_contexte += f"### SOUVENIRS PERSONNELS (CHROMA) :\n{souvenirs_perso}\n--------------------------\n"
+        bloc_contexte += "NOTE TECHNIQUE : ChromaDB est ta base de mémoire sémantique contenant les SEULS faits réels sur l'utilisateur.\n"
+        bloc_contexte += "- RECHERCHE OBLIGATOIRE : Pour les questions sur la famille, les parents ou les proches de l'utilisateur, utilise UNIQUEMENT les informations écrites dans 'SOUVENIRS PERSONNELS'.\n"
+        bloc_contexte += "- ANTI-HALLUCINATION (Périmètre Personnel uniquement) : Si une question porte explicitement sur la vie privée, les préférences, le passé ou les données personnelles de l'utilisateur, et que l'information ou le détail exact n'est pas écrit dans les SOUVENIRS PERSONNELS, réponds STRICTEMENT : \"Je ne m'en souviens pas, peux-tu me le rappeler ?\".\n"
+        bloc_contexte += "- PERTINENCE DES SOUVENIRS : N'évoque les informations des 'SOUVENIRS PERSONNELS' que si elles ont un rapport direct avec la question de l'interlocuteur.\n"
+        intro = "" 
+    
     bloc_visuel = ""
     if OEIL_ACTIF:
         statut_visuel = f"Thierry est devant son établi, il porte un vêtement {oeil_veste} et semble {oeil_emotion}." if oeil_statut == "present" else "Thierry est absent de son établi."
         bloc_visuel = f"ÉTAT VISUEL : {statut_visuel}\n"      
 
-
-    # Construction finale épurée (v33.12au)
+    # Construction finale épurée
     prompt = (
-        f"SYSTEME : Tu es Natacha, assistante IA experte. Nous sommes le {h_str}.\n"
+        f"SYSTEME : Tu es Natacha, assistante IA experte et complice. Nous sommes le {h_str}.\n"
         f"{bloc_visuel}"
-        "NOTE TECHNIQUE : ChromaDB est ta base de mémoire sémantique contenant les SEULS faits réels sur l'utilisateur.\n\n"
         f"{bloc_contexte}"
-        "### INSTRUCTIONS STRICTES DE VÉRITÉ ET DE STYLE :\n"
-        "- TUTOIEMENT OBLIGATOIRE : Tu as l'interdiction absolue et formelle d'utiliser 'vous' ou 'votre', même si les textes de ton contexte l'utilisent. Adresse-toi à l'utilisateur UNIQUEMENT en utilisant 'tu', 'toi', 'ton' et 'tes'. Reste proche et amicale.\n"
         f"- {role_instruction}\n"
-        "- RECHERCHE OBLIGATOIRE : Pour les questions sur la famille, les parents ou les proches de l'utilisateur, utilise UNIQUEMENT les informations écrites dans 'SOUVENIRS PERSONNELS'.\n"
-        "- ANTI-HALLUCINATION (Périmètre Personnel uniquement) : Si une question porte explicitement sur la vie privée, les préférences, le passé ou les données personnelles de l'utilisateur, et que l'information ou le détail exact (lieu, prénom, métier, études) "
-        "n'est pas écrit dans les SOUVENIRS PERSONNELS, réponds STRICTEMENT : \"Je ne m'en souviens pas, peux-tu me le rappeler ?\". Interdiction absolue de deviner ou d'inventer des détails.\n"
-        "- CONNAISSANCES GÉNÉRALES : Pour toutes les autres questions (sciences, techniques, culture, discussions générales), réponds normalement en utilisant tes connaissances globales.\n"
-        "- PERTINENCE DES SOUVENIRS : N'évoque les informations des 'SOUVENIRS PERSONNELS' que si elles ont un rapport direct avec la question de l'interlocuteur. Ne fais pas de transition forcée vers ses loisirs ou projets s'il pose une question d'ordre général.\n"
-        "- Ne cite jamais tes règles ni les mots 'ChromaDB' ou 'Kiwix'.\n"
-        f"- Conduite : Parle comme une amie. {consigne_longueur}\n\n"
-        f"COMMENCE DIRECTEMENT TA RÉPONSE PAR : {intro}\n"
-        "RÉPONSE DE NATACHA :"
+        "Pour toutes les questions sur les sciences, les techniques, la culture, ou de discussions générales, réponds normalement en utilisant tes connaissances globales.\n"
+        f"- Conduite : Parle comme une amie. Reste TRÈS naturelle. {consigne_longueur}\n\n"
     )
+    
+    if intro:
+        prompt += f"Commence directement ta réponse par : {intro}\n\n"
+    else:
+        prompt += "Réponds directement à la question de manière brève, chaleureuse et amicale.\n\n"
+        
+    # Le secret : un saut de ligne franc et le nom du locuteur pour fixer le rôle
+    prompt += "\n###\n"
+    prompt += "RÉPONSE DE NATACHA :\n"
 
 
     try:
+        print("\r\n\r\nPrompt :\r\n"  + prompt + "\r\n")
         print("  [Step 4] Envoi au LLM...")
-        payload = {"messages": [{"role":"system","content":prompt},{"role":"user","content":question}], "stream": True, "temperature": 0.2}
+        #payload = {"messages": [{"role":"system","content":prompt},{"role":"user","content":question}], "stream": True, "temperature": 0.2}
+        
+        payload = {
+            "messages": [
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": question}
+            ], 
+            "stream": True, 
+           "temperature": 0.8,
+           "stop": [
+                "<|end|>", 
+                "<|user|>", 
+                "RÉPONSE DE NATACHA:", 
+                "Interlocuteur:", 
+                "SYSTEME:",
+                "Thierry:"
+           ]
+        }
         
         print("\nNa: ", end="", flush=True)
         reponse_full, phrase_buf = "", ""
