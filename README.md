@@ -251,6 +251,7 @@ Quitter l'affichage sans couper l'IA : Appuyez sur Ctrl+C.
 ## 8. Gstream  écoute de la synthèse vocale au casque 
 
 On utilise un micro-casque USB branché sur le nœud "Oreille".
+Le code fonctionne uniquement avec un micro et casque en 48 Khz.
 
     La carte reçoit un flux audio provenant de l'Orange Pi (la "Bouche").
 
