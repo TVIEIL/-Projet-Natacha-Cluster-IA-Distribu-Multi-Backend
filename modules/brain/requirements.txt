@@ -7,3 +7,6 @@ chromadb
 
 # --- Gestion de la Configuration ---
 python-dotenv
+
+# --- module feedparser permet de lire et décoder des flux RSS ---
+feedparser
