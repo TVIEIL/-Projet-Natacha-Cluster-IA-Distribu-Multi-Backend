@@ -824,6 +824,18 @@ il est recommandé d'utiliser le fichier suivant :
 
 Le projet Natacha démontre qu'il est possible de créer une IA domestique puissante en recyclant et en synchronisant du matériel varié, sans dépendre du Cloud, tout en conservant une latence de réponse "humaine".
 
+
+## 📦 Dépendances & Remerciements
+
+Ce projet s'appuie sur des technologies open-source majeures pour l'inférence, le traitement de la parole et la communication distribuée :
+
+* [Eclipse Paho MQTT](https://github.com/eclipse-paho/paho.mqtt.android) - Pour la gestion des flux de communication réseau et la messagerie asynchrone.
+* [ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp) - Pour l'inférence ultra-optimisée en C++ des modèles de langage (LLM) en local.
+* [openai/whisper](https://github.com/openai/whisper) - Pour la reconnaissance vocale (Speech-to-Text) haute précision en Python.
+* [coqui-ai/TTS (XTTS v2)](https://github.com/coqui-ai/TTS) - Pour la synthèse vocale (Text-to-Speech) avancée avec clonage de voix.
+
+
+
 *Développé par Thierry VIEIL - 2026*
 
 
