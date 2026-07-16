@@ -836,6 +836,7 @@ Ce projet s'appuie sur des technologies open-source majeures pour l'inférence, 
 * [chroma-core/chroma](https://github.com/chroma-core/chroma) - La base de données vectorielle pour la mémoire à long terme de l'assistant (RAG).
 * [kiwix/kiwix-lib](https://github.com/kiwix/kiwix-lib) - Pour l'accès hors-ligne à des bases de connaissances géantes (comme Wikipédia) en toute autonomie.
 
+* [Google Gemini](https://gemini.google.com/) - Co-développeur IA pour l'aide à la conception de l'architecture, au débogage et à la documentation du projet.
 
 
 
