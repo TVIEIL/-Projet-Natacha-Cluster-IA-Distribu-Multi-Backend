@@ -6,6 +6,9 @@ Natacha est un assistant personnel modulaire conçu pour fonctionner sur un clus
 
 &nbsp;
 Démonstration :
+[![Vidéo de démo](https://img.youtube.com/vi/ivVGWKrNOFM/hqdefault.jpg)](https://youtube.com/watch?v=ivVGWKrNOFM&is=CzzSoqOgiRcdu8HI)
+
+
 &nbsp;
 https://youtube.com/watch?v=ivVGWKrNOFM&is=WevjTCej9jadv8qc
 
