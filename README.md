@@ -4,7 +4,7 @@
 
 Natacha est un assistant personnel modulaire conçu pour fonctionner sur un cluster de machines hétérogènes. Contrairement aux solutions monolithiques, Natacha fragmente l'intelligence (Cerveau, Oreille, Bouche) pour exploiter le meilleur de chaque architecture matérielle (Intel Core, AMD Ryzen, Rockchip SIC). 
 
-Comment utiliser Natacha ?
+###Comment utiliser Natacha ?
 
 ​Le système dispose d'un micro-casque USB sans fil pour échanger vocalement avec Natacha. Chaque interaction s'amorce par le mot-clé d'appel, suivi de votre demande.
 
