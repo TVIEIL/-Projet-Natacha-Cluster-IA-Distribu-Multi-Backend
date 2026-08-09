@@ -30,8 +30,7 @@ Natacha interroge périodiquement une dizaine de flux RSS et les stocke dans sa 
 ​"Natacha, Thierry Vieil est né à Lille."
 ​Si vous posez ultérieurement la question "Où est né Thierry Vieil ?", Natacha sera en mesure de retrouver la réponse dans sa base ChromaDB
 
-Le système dispose d'un micro-casque USB sans fil pour échanger avec Natacha. 
- 
+
 
 
 &nbsp;
