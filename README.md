@@ -2,36 +2,36 @@
 
 ![Schéma de l'Architecture Natacha](assets/architecture-natacha.png)
 
-Natacha est un assistant personnel modulaire conçu pour fonctionner sur un cluster de machines hétérogènes. Contrairement aux solutions monolithiques, Natacha fragmente l'intelligence (Cerveau, Oreille, Bouche) pour exploiter le meilleur de chaque architecture matérielle (Intel Core, AMD Ryzen, Rockchip SIC). Le système dispose d'un micro-casque USB sans fil pour échanger avec Natacha. 
+Natacha est un assistant personnel modulaire conçu pour fonctionner sur un cluster de machines hétérogènes. Contrairement aux solutions monolithiques, Natacha fragmente l'intelligence (Cerveau, Oreille, Bouche) pour exploiter le meilleur de chaque architecture matérielle (Intel Core, AMD Ryzen, Rockchip SIC). 
 
-Comment utiliser Natacha?
+Comment utiliser Natacha ?
 
-1. on pose une question dont la réponse est puisée dans les données du modèle 
+​Le système dispose d'un micro-casque USB sans fil pour échanger vocalement avec Natacha. Chaque interaction s'amorce par le mot-clé d'appel, suivi de votre demande.
 
-"Natacha" + question "e.g : Pourquoi le ciel est bleu?"
+​1. Interroger les connaissances générales du modèle
+Posez une question dont la réponse est puisée directement dans les données internes du modèle :
+​"Natacha, pourquoi le ciel est bleu ?"
 
-2. on demande à Natacha de trouver de l'information dans la base de connaissances de kiwix.
+​2. Consulter la base de connaissances Kiwix
+Demandez à Natacha de chercher de l'information hors ligne :
+​"Natacha, lis-moi un article Kiwix sur l'intrication quantique."
+​Note : Au lieu de lire brutalement les résultats bruts de la recherche, Natacha synthétise et résume le contenu pour vous.
 
-"Natacha" + "lit moi un article kiwix sur l'intrication quantique"
-Elle ne va pas simplement lire le résultat 
-de la recherche, mais résumer le contenue
+​3. Interroger la base relationnelle (ChromaDB)
+Accédez aux informations personnelles ou contextuelles préalablement enregistrées :
+​"Natacha, qui est Thierry Vieil ?"
 
-3. on peut puiser des informations relationnelles enregistrées dans chromaDB (pré-enregistré par l'utilisateur)
+​4. Suivre l'actualité
+Natacha interroge périodiquement une dizaine de flux RSS et les stocke dans sa base de données locale :
+​"Natacha, parle-moi de l'actualité du dimanche 9 août 2026."
+​Note : Là encore, Natacha évite la simple restitution brute et vous propose un résumé synthétique de l'information disponible.
+​Enregistrer une nouvelle information
+​Pour alimenter la base de données relationnelle ChromaDB par la voix, formulez simplement votre phrase d'enregistrement :
+​"Natacha, Thierry Vieil est né à Lille."
+​Si vous posez ultérieurement la question "Où est né Thierry Vieil ?", Natacha sera en mesure de retrouver la réponse dans sa base ChromaDB
 
-"Natacha" + "qui est Thierry Vieil?" 
-
-4. on peut lui demander de parler de l'actualité.Une dizaine de flux RSS sont interrogés périodiquement et enregistré dans chromaDB
-
-"Natacha" + "Parle moi de l'actualité du Dimanche 9 août 2026"
-Là encore Natacha ne fera pas une simple lecture, mais résumera l'information presente dans sa base de données locale.
-
-
-Pour enregistrer une information dans chromaDB relationnel il faut dire par exemple :
-
-"Natacha" + " Thierry Vieil est né à Lille"
-
-si je pose ultérieurement la question "Ou est né Thierry Vieil?" Natacha trouvera la réponse dans sa base ChromaDB relationnel 
-
+Le système dispose d'un micro-casque USB sans fil pour échanger avec Natacha. 
+ 
 
 
 &nbsp;
