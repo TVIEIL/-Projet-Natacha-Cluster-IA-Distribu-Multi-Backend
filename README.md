@@ -14,7 +14,11 @@ Posez une question dont la réponse est puisée directement dans les données in
 
 ​2. Consulter la base de connaissances Kiwix
 Demandez à Natacha de chercher de l'information hors ligne :
-​"Natacha, lis-moi un article Kiwix sur l'intrication quantique." &nbsp;
+​"Natacha, lis-moi un article Kiwix sur l'intrication quantique." 
+ 
+&nbsp;
+ 
+
 ​Note : Au lieu de lire brutalement les résultats bruts de la recherche, Natacha synthétise et résume le contenu pour vous.
 
 ​3. Interroger la base relationnelle (ChromaDB)
