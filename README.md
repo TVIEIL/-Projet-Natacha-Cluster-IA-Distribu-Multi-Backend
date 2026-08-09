@@ -6,22 +6,24 @@ Natacha est un assistant personnel modulaire conçu pour fonctionner sur un clus
 
 Comment utiliser Natacha?
 
-1. on pose une question la réponse est puisée dans les données du modèle 
+1. on pose une question dont la réponse est puisée dans les données du modèle 
 
 "Natacha" + question "e.g : Pourquoi le ciel est bleu?"
 
-2. on pose une question en utilisant la base de connaissances de kiwix.
+2. on demande à Natacha de trouver de l'information dans la base de connaissances de kiwix.
 
 "Natacha" + "lit moi un article kiwix sur l'intrication quantique"
+Elle ne va pas simplement lire le résultat 
+de la recherche, mais résumer le contenue
 
-3. on peut puise des informations relationnelles enregistrées dans chromaDB
+3. on peut puiser des informations relationnelles enregistrées dans chromaDB (pré-enregistré par l'utilisateur)
 
 "Natacha" + "qui est Thierry Vieil?" 
 
-4. on peut poser une question sur l'actualité 
-une dizaines de flux RSS sont interrogés périodiquement et enregistré dans chromaDB
+4. on peut lui demander de parler de l'actualité.Une dizaine de flux RSS sont interrogés périodiquement et enregistré dans chromaDB
 
 "Natacha" + "Parle moi de l'actualité du Dimanche 9 août 2026"
+Là encore Natacha ne fera pas une simple lecture, mais résumera l'information presente dans sa base de données locale.
 
 
 Pour enregistrer une information dans chromaDB relationnel il faut dire par exemple :
