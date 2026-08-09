@@ -15,7 +15,6 @@ Posez une question dont la réponse est puisée directement dans les données in
 ​2. Consulter la base de connaissances Kiwix
 Demandez à Natacha de chercher de l'information hors ligne :
 ​"Natacha, lis-moi un article Kiwix sur l'intrication quantique." 
- 
 &nbsp;
  
 
