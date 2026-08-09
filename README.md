@@ -18,7 +18,7 @@ Demandez à Natacha de chercher de l'information hors ligne :
 &nbsp;
  
 
-​Note : Au lieu de lire brutalement les résultats bruts de la recherche, Natacha synthétise et résume le contenu pour vous.
+*​Note : Au lieu de lire brutalement les résultats bruts de la recherche, Natacha synthétise et résume le contenu pour vous.*
 
 ​3. Interroger la base relationnelle (ChromaDB)
 Accédez aux informations personnelles ou contextuelles préalablement enregistrées :
