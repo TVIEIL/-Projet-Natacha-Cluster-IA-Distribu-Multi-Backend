@@ -2,7 +2,35 @@
 
 ![Schéma de l'Architecture Natacha](assets/architecture-natacha.png)
 
-Natacha est un assistant personnel modulaire conçu pour fonctionner sur un cluster de machines hétérogènes. Contrairement aux solutions monolithiques, Natacha fragmente l'intelligence (Cerveau, Oreille, Bouche) pour exploiter le meilleur de chaque architecture matérielle (Intel Core, AMD Ryzen, Rockchip SIC).
+Natacha est un assistant personnel modulaire conçu pour fonctionner sur un cluster de machines hétérogènes. Contrairement aux solutions monolithiques, Natacha fragmente l'intelligence (Cerveau, Oreille, Bouche) pour exploiter le meilleur de chaque architecture matérielle (Intel Core, AMD Ryzen, Rockchip SIC). Le système dispose d'un micro-casque USB sans fil pour échanger avec Natacha. 
+
+4 modes de fonctionnement sont possibles.
+
+# 1. on pose une question la réponse est puisée dans les données du modèle 
+
+"Natacha" + question "e.g : Pourquoi le ciel est bleu?"
+
+# 2. on pose une question en utilisant la base de connaissances de kiwix.
+
+"Natacha" + "lit moi un article kiwix sur l'intrication quantique"
+
+# 3. on peut puise des informations relationnelles enregistrées dans chromaDB
+
+"Natacha" + "qui est Thierry Vieil?" 
+
+# 4. on peut poser une question sur l'actualité 
+une dizaines de flux RSS sont interrogés périodiquement et enregistré dans chromaDB
+
+"Natacha" + "Parle moi de l'actualité du Dimanche 9 août 2026"
+
+
+Pour enregistrer une information dans chromaDB relationnel il faut dire par exemple :
+
+"Natacha" + " Thierry Vieil est né à Lille"
+
+si je pose ultérieurement la question "Ou est né Thierry Vieil?" Natacha trouvera la réponse dans sa base ChromaDB relationnel 
+
+
 
 &nbsp;
 Démonstration :
