@@ -27,10 +27,14 @@ Accédez aux informations personnelles ou contextuelles préalablement enregistr
 ​4. Suivre l'actualité
 Natacha interroge périodiquement une dizaine de flux RSS et les stocke dans sa base de données locale :
 ​"Natacha, parle-moi de l'actualité du dimanche 9 août 2026."
-​Note : Là encore, Natacha évite la simple restitution brute et vous propose un résumé synthétique de l'information disponible.
-​Enregistrer une nouvelle information
+
+*​Note : Là encore, Natacha évite la simple restitution brute et vous propose un résumé synthétique de l'information disponible.*
+
+### Comment ​enregistrer une nouvelle information?
+
 ​Pour alimenter la base de données relationnelle ChromaDB par la voix, formulez simplement votre phrase d'enregistrement :
-​"Natacha, Thierry Vieil est né à Lille."
+​"Natacha, Enregistre que Thierry Vieil est né à Lille."
+
 ​Si vous posez ultérieurement la question "Où est né Thierry Vieil ?", Natacha sera en mesure de retrouver la réponse dans sa base ChromaDB
 
 
