@@ -35,7 +35,7 @@ Natacha interroge périodiquement une dizaine de flux RSS et les stocke dans sa 
 ​Pour alimenter la base de données relationnelle ChromaDB par la voix, formulez simplement votre phrase d'enregistrement :
 ​"Natacha, Enregistre que Thierry Vieil est né à Lille."
 
-​Si vous posez ultérieurement la question "Où est né Thierry Vieil ?", Natacha sera en mesure de retrouver la réponse dans sa base ChromaDB
+​Si vous posez ultérieurement la question "Natacha Où est né Thierry Vieil ?", Natacha sera en mesure de retrouver la réponse dans sa base ChromaDB
 
 
 
