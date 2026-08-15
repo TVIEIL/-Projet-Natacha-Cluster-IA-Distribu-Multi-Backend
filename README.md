@@ -110,7 +110,7 @@ chmod +x install.sh
 ./install.sh
 ```
 
-## 0.  Installation manuelle -  de Miniconda3
+## 1.  Installation manuelle -  de Miniconda3
 
 Si Miniconda n'est pas encore présent sur votre système, vous devez l'installer en premier. La version dépend du type de processeur de votre nœud.
 
@@ -150,7 +150,7 @@ conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
 source ~/.bashrc
 ```
 
-## 1. Création de l'environnement Conda
+## 2. Création de l'environnement Conda
 Ouvrez un terminal et créez un environnement dédié au nœud (ici, l'Oreille) avec une version de 
 
 Python stable pour l'IA (Python 3.10 ou 3.11 est recommandé) :
@@ -161,7 +161,7 @@ conda create -n oreille_natacha python=3.11 -y
 ```
 
 
-## 2. Activation et Installation
+## 3. Activation et Installation
 
 
 Activez ce nouvel environnement. Votre terminal affichera (natacha_oreille) au début de la ligne :
@@ -194,7 +194,7 @@ Puis, installez le reste de vos librairies (MQTT, Faster-Whisper, etc.) :
 pip install -r requirements.txt
 ```
 
-## 3. Calibrage Matériel Audio (Uniquement Oreille)
+## 4. Calibrage Matériel Audio (Uniquement Oreille)
 
 Branchez votre casque/micro, assurez-vous d'être dans l'environnement Conda, et lancez l'utilitaire :
 
@@ -208,7 +208,7 @@ Voici un exemple avec mon micro casque USB qui se nomme   "USB DONGLE : Audio"
 ![Exemple d'execution de setup_audio.py](assets/setup_audio.png)
 
 
-## 4. Sécurité & Secrets
+## 5. Sécurité & Secrets
 
 Pour des raisons de sécurité, les identifiants SSH ne sont pas inclus dans le dépôt. Pour configurer vos accès :
 
