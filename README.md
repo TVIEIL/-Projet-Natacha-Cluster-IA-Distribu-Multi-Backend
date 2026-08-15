@@ -222,7 +222,7 @@ Pour des raisons de sécurité, les identifiants SSH ne sont pas inclus dans le 
 
 3. Modifiez `secrets_natacha.py` avec vos propres identifiants SSH et adresses IP.
 
-## 5. Exécution & Automatisation (systemd avec Conda)
+## 6. Exécution & Automatisation (systemd avec Conda)
 
 
 Vous pouvez tester le script manuellement :
@@ -236,7 +236,7 @@ Avec Conda, le chemin vers l'exécutable Python est différent. Éditez votre fi
 
 
 
-## 6. 🛠️ Installation manuelle du service (Mode Utilisateur)
+## 7. 🛠️ Installation manuelle du service (Mode Utilisateur)
 
 Si vous n'utilisez pas le script automatique, voici les étapes pour installer les services manuellement pour votre utilisateur :
 
@@ -286,7 +286,7 @@ systemctl --user enable oreille_natacha.service
 systemctl --user start oreille_natacha.service
 ```
 
-## 7. Monitoring au quotidien
+## 8. Monitoring au quotidien
 
 Grâce à journalctl, le nœud tourne en tâche de fond mais reste accessible à tout moment :
 
@@ -301,7 +301,7 @@ Quitter l'affichage sans couper l'IA : Appuyez sur Ctrl+C.
 
 
 
-## 8. Gstream  écoute de la synthèse vocale au casque 
+## 9. Gstream  écoute de la synthèse vocale au casque 
 
 On utilise un micro-casque USB branché sur le nœud "Oreille".
 Le code fonctionne uniquement avec un micro et casque en 48 Khz.
