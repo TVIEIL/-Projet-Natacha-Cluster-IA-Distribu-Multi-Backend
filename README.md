@@ -37,6 +37,18 @@ Natacha interroge périodiquement une dizaine de flux RSS et les stocke dans sa 
 
 ​Si vous posez ultérieurement la question "Natacha Où est né Thierry Vieil ?", Natacha sera en mesure de retrouver la réponse dans sa base ChromaDB
 
+### Comment faire un diagnostic de Natacha?
+
+"Natacha, Diagnostic fonctionnement Natacha"
+
+### Comment redémarrer les services de Natacha?
+
+"Natacha, redémarrage des services Natacha"
+
+### Comment arrêter complètement Natacha?
+
+"Natacha, arrêt complet assistant Natacha"
+
 
 
 
