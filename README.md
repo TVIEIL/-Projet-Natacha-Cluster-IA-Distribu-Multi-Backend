@@ -39,7 +39,7 @@ Natacha interroge périodiquement une dizaine de flux RSS et les stocke dans sa 
 
 ### Comment faire un diagnostic de Natacha?
 
-"Natacha, Diagnostic fonctionnement Natacha"
+"Natacha, analyse fonctionnement Natacha"
 
 ### Comment redémarrer les services de Natacha?
 
@@ -47,7 +47,7 @@ Natacha interroge périodiquement une dizaine de flux RSS et les stocke dans sa 
 
 ### Comment arrêter complètement Natacha?
 
-"Natacha, arrêt complet assistant Natacha"
+"Natacha, arrêt complet assistante Natacha"
 
 
 
