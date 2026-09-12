@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 #######################################################
-##  Projet Natacha INSTALLATION AUTOMATIQUE DU NOEUD
+##  Projet Natacha INSTALLATION AUTOMATIQUE DU NOEUD
 #######################################################
 
 set -e  # Arrête le script en cas d'erreur
@@ -68,6 +68,10 @@ if [ "$choice" -eq 4 ]; then exit 0; fi
 PROJECT_ROOT=$(pwd)
 CURRENT_USER=$USER # Récupère l'utilisateur qui lance le script
 
+# Ajout crucial de l'utilisateur au groupe audio pour les accès matériels
+echo -e "${YELLOW}Ajout de l'utilisateur $CURRENT_USER au groupe 'audio'...${NC}"
+sudo usermod -aG audio $CURRENT_USER
+
 # --- Fonction pour installer le service existant ---
 deploy_service() {
     local MODULE_PATH=$1    # ex: ear
@@ -75,12 +79,22 @@ deploy_service() {
 
     echo -e "${GREEN}Installation du service $SERVICE_NAME...${NC}"
     mkdir -p ~/.config/systemd/user/
+    local TARGET_SERVICE="$HOME/.config/systemd/user/$SERVICE_NAME.service"
 
     # Copie du fichier depuis ton dossier de scripts vers le dossier systemd utilisateur
-    cp "$PROJECT_ROOT/scripts_systemd/$MODULE_PATH/$SERVICE_NAME.service" ~/.config/systemd/user/
+    cp "$PROJECT_ROOT/scripts_systemd/$MODULE_PATH/$SERVICE_NAME.service" "$TARGET_SERVICE"
 
-    # Remplacement de 'vieil' par l'utilisateur actuel dans le fichier copié
-    sed -i "s/vieil/$CURRENT_USER/g" ~/.config/systemd/user/$SERVICE_NAME.service
+    # 1. Remplacement de 'vieil' par l'utilisateur actuel
+    sed -i "s/vieil/$CURRENT_USER/g" "$TARGET_SERVICE"
+    
+    # 2. Remplacement de %h par le chemin absolu du dossier personnel
+    sed -i "s|%h|$HOME|g" "$TARGET_SERVICE"
+
+    # 3. Injection sécurisée des variables d'environnement PipeWire sous [Service]
+    local RUN_DIR="/run/user/$(id -u)"
+    sed -i "/^\[Service\]/a Environment=\"DBUS_SESSION_BUS_ADDRESS=unix:path=$RUN_DIR/bus\"" "$TARGET_SERVICE"
+    sed -i "/^\[Service\]/a Environment=\"PULSE_SERVER=unix:$RUN_DIR/pulse/native\"" "$TARGET_SERVICE"
+    sed -i "/^\[Service\]/a Environment=\"XDG_RUNTIME_DIR=$RUN_DIR\"" "$TARGET_SERVICE"
 
     # Activation
     systemctl --user daemon-reload
@@ -121,7 +135,7 @@ case $choice in
         # Installation des DEUX services de l'oreille
         deploy_service "ear" "oreille_natacha"
         deploy_service "ear" "gstream_natacha"
-        ;;  # <--- On ferme l'option 1 proprement
+        ;; 
 
     2)
         echo -e "${GREEN}>>> Configuration CERVEAU...${NC}"
@@ -131,7 +145,7 @@ case $choice in
         
         deploy_service "brain" "cerveau_natacha"
         echo -e "${YELLOW}Nota: N'oubliez pas de compiler llama.cpp manuellement.${NC}"
-        ;;  # <--- On ferme l'option 2
+        ;; 
 
     3)
         echo -e "${GREEN}>>> Configuration BOUCHE...${NC}"
@@ -140,7 +154,7 @@ case $choice in
         $HOME/miniconda3/envs/bouche_natacha/bin/pip install -r "$PROJECT_ROOT/modules/mouth/requirements.txt"
         
         deploy_service "mouth" "bouche_natacha"
-        ;;  # <--- On ferme l'option 3
+        ;; 
 esac
 
 # --- 4. Finalisation ---
