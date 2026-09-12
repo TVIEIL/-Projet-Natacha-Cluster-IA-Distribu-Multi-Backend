@@ -26,7 +26,7 @@ import requests
 import re
 
 # Configuration
-BROKER = "127.0.0.1"
+BROKER = "192.168.1.80"
 TOPIC_APPRENDRE = "natacha/apprendre"
 FEEDS = [
     "https://cnes.fr/fr/rss.xml", "https://www.esa.int/rssfeed/France",

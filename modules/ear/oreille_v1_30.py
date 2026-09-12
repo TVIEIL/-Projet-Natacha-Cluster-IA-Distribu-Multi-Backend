@@ -295,7 +295,7 @@ print(f"Index audio résolu avec succès : {input_idx}")
 
 
 print(f"📥 Chargement de Whisper Medium (Rate cible: {MIC_RATE} Hz)...")
-model = WhisperModel("medium", device="cpu", compute_type="int8", cpu_threads=12, num_workers=1)
+model = WhisperModel("large-v3", device="cpu", compute_type="int8", cpu_threads=12, num_workers=1)
 
 p = pyaudio.PyAudio()
 
