@@ -312,13 +312,14 @@ print(f"🎤 Natacha v1.30-SR (Rate: {MIC_RATE}Hz). Je t'écoute sur l'index {in
 audio_buffer = []
 silence_counter = 0
 
-KEYWORDS_NOM = ["natacha", "natasha", "natascha", "matacha", "atacha","attachat"]
-ACT_ANALYSE = ["analyse", "diagnostic", "rapport", "santé", "statut", "état"]
-SUJ_ANALYSE = ["fonctionnement", "système", "marche", "opérationnel"]
+KEYWORDS_NOM = ["natacha", "natasha", "natascha", "matacha", "atacha","attachat","nathacha","nathashah","natashaa"]
+ACT_ANALYSE = ["analyse", "diagnostic", "rapport", "santé", "statut","statue", "état","évalue","vérifie","examine","inspecte","contrôle","audite","scrute"]
+SUJ_ANALYSE = ["fonctionnement", "système", "activité", "opérationnel","opérationnelle"]
 ACT_RELANCE = ["redémarrage", "relance", "relancer", "restart", "reboot"]
 SUJ_RELANCE = ["services", "logiciels", "système", "tout", "programmes", "natacha"]
 ACT_ARRET = ["arrêt", "arret", "arré", "arre", "arrête", "éteindre", "stop", "halt"]
-SUJ_ARRET = ["complet", "complé", "compliquer", "comblé", "total", "système", "assis"]
+SUJ_ARRET = ["complet", "complé", "compliquer", "comblé", "total", "général", "définitif"]
+
 
 try:
     while True:
